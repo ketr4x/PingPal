@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'pager_screen.dart';
 import '../helpers.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -12,6 +14,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final usernameController = TextEditingController();
+
+  FirebaseFirestore db = FirebaseFirestore.instance;
 
   @override
   void dispose() {
@@ -40,7 +44,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: () async {
                   try {
                     final userCredential = await FirebaseAuth.instance.signInAnonymously();
+                    db.collection('Users').doc(userCredential.user?.uid).set({"username": usernameController.text});
                     printDebug('Signed in with temporary acccount ${userCredential.user?.uid}');
+                    if (context.mounted) {
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => PagerScreen())
+                      );
+                    }
                   } on FirebaseAuthException catch (e) {
                     printDebug('Unable to sign in: $e');
                   }
