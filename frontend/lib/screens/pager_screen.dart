@@ -12,6 +12,8 @@ class PagerScreen extends StatefulWidget {
 }
 
 class _PagerScreenState extends State<PagerScreen> {
+  final _selectedIndex = 0;
+
   final usernameController = TextEditingController();
 
   FirebaseFirestore db = FirebaseFirestore.instance;
@@ -138,6 +140,7 @@ class _PagerScreenState extends State<PagerScreen> {
               ),
             ),
           ),
+          bottomNavigationBar: bottomNavBar(context, _selectedIndex),
         );
       }
     );

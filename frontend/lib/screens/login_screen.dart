@@ -44,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: () async {
                   try {
                     final userCredential = await FirebaseAuth.instance.signInAnonymously();
-                    db.collection('Users').doc(userCredential.user?.uid).set({"username": usernameController.text});
+                    db.collection('Users').doc(userCredential.user?.uid).set({"username": usernameController.text, "friends": []});
                     printDebug('Signed in with temporary acccount ${userCredential.user?.uid}');
                     if (context.mounted) {
                       Navigator.pushReplacement(

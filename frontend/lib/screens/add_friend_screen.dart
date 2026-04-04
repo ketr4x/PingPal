@@ -17,7 +17,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
   FirebaseFirestore db = FirebaseFirestore.instance;
 
   final uid = FirebaseAuth.instance.currentUser!.uid;
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,7 +62,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                     final userDoc = querySnapshot.docs.first;
 
                     final currentUserDoc = await db.collection('Users').doc(uid).get();
-                    if (currentUserDoc['friends'].contains(userDoc.get("uid"))) {
+                    if (currentUserDoc['friends'].contains(userDoc.id)) {
                       printDebug('User is already in friendlist');
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         if (!mounted) return;
@@ -77,7 +77,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                     }
 
                     await db.collection('Users').doc(uid).update({
-                      "friends": FieldValue.arrayUnion([userDoc.get("uid")])
+                      "friends": FieldValue.arrayUnion([userDoc.id])
                     }).then((val) {
                       printDebug('User added to friendlist');
                       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -92,7 +92,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                     });
                     
                   } catch (e) {
-                    printDebug('Unable to send the ping');
+                    printDebug('Unable to add user: $e');
                   }
                 },
                 child: const Icon(Icons.add),
