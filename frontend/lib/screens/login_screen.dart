@@ -43,13 +43,19 @@ class _LoginScreenState extends State<LoginScreen> {
               ElevatedButton(
                 onPressed: () async {
                   try {
-                    final userCredential = await FirebaseAuth.instance.signInAnonymously();
-                    db.collection('Users').doc(userCredential.user?.uid).set({"username": usernameController.text, "friends": []});
-                    printDebug('Signed in with temporary acccount ${userCredential.user?.uid}');
+                    final userCredential = await FirebaseAuth.instance
+                        .signInAnonymously();
+                    db.collection('Users').doc(userCredential.user?.uid).set({
+                      "username": usernameController.text,
+                      "friends": [],
+                    });
+                    printDebug(
+                      'Signed in with temporary acccount ${userCredential.user?.uid}',
+                    );
                     if (context.mounted) {
                       Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => PagerScreen())
+                        context,
+                        MaterialPageRoute(builder: (context) => PagerScreen()),
                       );
                     }
                   } on FirebaseAuthException catch (e) {

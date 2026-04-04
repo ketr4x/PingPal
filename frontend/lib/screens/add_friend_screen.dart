@@ -31,7 +31,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                 controller: usernameController,
                 decoration: const InputDecoration(
                   border: UnderlineInputBorder(),
-                  labelText: "Enter your friend's username"
+                  labelText: "Enter your friend's username",
                 ),
               ),
               const SizedBox(height: 8),
@@ -43,8 +43,11 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                       printDebug('Receiver username is empty');
                       return;
                     }
-                    
-                    final querySnapshot = await db.collection("Users").where("username", isEqualTo: username).get();
+
+                    final querySnapshot = await db
+                        .collection("Users")
+                        .where("username", isEqualTo: username)
+                        .get();
 
                     if (querySnapshot.docs.isEmpty) {
                       printDebug('Cannot find the user');
@@ -54,14 +57,17 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                           SnackBar(
                             content: Text("Cannot find this user"),
                             duration: Duration(seconds: 3),
-                          )
+                          ),
                         );
                       });
                       return;
                     }
                     final userDoc = querySnapshot.docs.first;
 
-                    final currentUserDoc = await db.collection('Users').doc(uid).get();
+                    final currentUserDoc = await db
+                        .collection('Users')
+                        .doc(uid)
+                        .get();
                     if (currentUserDoc['friends'].contains(userDoc.id)) {
                       printDebug('User is already in friendlist');
                       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -70,27 +76,30 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                           SnackBar(
                             content: Text("User is already your friend"),
                             duration: Duration(seconds: 3),
-                          )
+                          ),
                         );
                       });
                       return;
                     }
 
-                    await db.collection('Users').doc(uid).update({
-                      "friends": FieldValue.arrayUnion([userDoc.id])
-                    }).then((val) {
-                      printDebug('User added to friendlist');
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("User added to friendlist"),
-                            duration: Duration(seconds: 3),
-                          )
-                        );
-                      });
-                    });
-                    
+                    await db
+                        .collection('Users')
+                        .doc(uid)
+                        .update({
+                          "friends": FieldValue.arrayUnion([userDoc.id]),
+                        })
+                        .then((val) {
+                          printDebug('User added to friendlist');
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("User added to friendlist"),
+                                duration: Duration(seconds: 3),
+                              ),
+                            );
+                          });
+                        });
                   } catch (e) {
                     printDebug('Unable to add user: $e');
                   }

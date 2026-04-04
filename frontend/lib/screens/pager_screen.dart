@@ -18,35 +18,14 @@ class _PagerScreenState extends State<PagerScreen> {
 
   FirebaseFirestore db = FirebaseFirestore.instance;
 
-  Stream<QuerySnapshot<Map<String, dynamic>>>? _pingsStream;
+  late final Stream<QuerySnapshot<Map<String, dynamic>>> _pingsStream = db
+      .collection('Pings')
+      .where('receiver', isEqualTo: uid)
+      .snapshots();
   bool _hasSeenFirstPingSnapshot = false;
 
   final uid = FirebaseAuth.instance.currentUser!.uid;
   Map<String, dynamic>? userData;
-  
-  Future<void> _loadUserData() async{
-    try {
-      final doc = await db.collection('Users').doc(uid).get();
-      final data = doc.data();
-
-      if (!mounted) return;
-      setState(() {
-        userData = data;
-        final username = userData?['username'] as String?;
-        if (username != null && username.isNotEmpty) {
-          _pingsStream = db.collection('Pings').where('receiver', isEqualTo: username).snapshots();
-        }
-      });
-    } catch (e) {
-      printDebug('Error getting user info: $e');
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserData();
-  }
 
   @override
   void dispose() {
@@ -56,20 +35,12 @@ class _PagerScreenState extends State<PagerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_pingsStream == null) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: _pingsStream,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Scaffold(
-            body: Center(child: Text('Something went wrong'))
+            body: Center(child: Text('Something went wrong')),
           );
         }
         if (!snapshot.hasData) {
@@ -81,7 +52,9 @@ class _PagerScreenState extends State<PagerScreen> {
         if (!_hasSeenFirstPingSnapshot) {
           _hasSeenFirstPingSnapshot = true;
         } else {
-          final hasNewPing = snapshot.data!.docChanges.any((c) => c.type == DocumentChangeType.added);
+          final hasNewPing = snapshot.data!.docChanges.any(
+            (c) => c.type == DocumentChangeType.added,
+          );
           if (hasNewPing) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
@@ -89,7 +62,7 @@ class _PagerScreenState extends State<PagerScreen> {
                 SnackBar(
                   content: Text('You have been paged!'),
                   duration: Duration(seconds: 3),
-                )
+                ),
               );
             });
           }
@@ -112,27 +85,10 @@ class _PagerScreenState extends State<PagerScreen> {
                   const SizedBox(height: 8),
                   ElevatedButton(
                     onPressed: () async {
-                      try {
-                        final sender = userData?['username'] as String?;
-                        if (sender == null || sender.isEmpty) {
-                          printDebug('User data not loaded yet');
-                          return;
-                        }
-
-                        final receiver = usernameController.text.trim();
-                        if (receiver.isEmpty) {
-                          printDebug('Receiver username is empty');
-                          return;
-                        }
-
-                        await db.collection('Pings').add({
-                          'sender': sender,
-                          'receiver': receiver,
-                          'timestamp': FieldValue.serverTimestamp(),
-                        });
-                      } catch (e) {
-                        printDebug('Unable to send the ping');
-                      }
+                      final receiverUid = await getUidByUsername(
+                        usernameController.text.trim(),
+                      );
+                      sendPing(receiverUid);
                     },
                     child: const Icon(Icons.send),
                   ),
@@ -142,7 +98,7 @@ class _PagerScreenState extends State<PagerScreen> {
           ),
           bottomNavigationBar: bottomNavBar(context, _selectedIndex),
         );
-      }
+      },
     );
   }
 }
