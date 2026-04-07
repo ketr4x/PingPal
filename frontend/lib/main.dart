@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 
+import 'providers/ping_provider.dart';
+import 'globals.dart';
+import 'firebase_options.dart';
 import 'screens/login_screen.dart';
 
 Future<void> main() async {
@@ -15,10 +18,14 @@ class PingPal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'PingPal',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.blue)),
-      home: LoginScreen(),
+    return ChangeNotifierProvider(
+      create: (_) => PingProvider(),
+      child: MaterialApp(
+        title: 'PingPal',
+        theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.blue)),
+        home: LoginScreen(),
+        scaffoldMessengerKey: rootScaffoldMessengerKey,
+      ),
     );
   }
 }

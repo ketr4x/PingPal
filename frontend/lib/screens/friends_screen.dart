@@ -27,7 +27,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
       friendUids.map((uid) async {
         final username = await getUsernameByUid(uid);
         return MapEntry(uid, username);
-      })
+      }),
     );
     return Map.fromEntries(entries);
   }
@@ -97,14 +97,14 @@ class _FriendsScreenState extends State<FriendsScreen> {
                               child: ListTile(
                                 title: Text(username),
                                 trailing: IconButton(
-                                    onPressed: () => sendPing(friendUid),
-                                    icon: Icon(Icons.notification_add)
+                                  onPressed: () => sendPing(friendUid),
+                                  icon: Icon(Icons.notification_add),
                                 ),
                               ),
                             );
-                          }).toList()
+                          }).toList(),
                         );
-                      }
+                      },
                     ),
                   ),
                 ],

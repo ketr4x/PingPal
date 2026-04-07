@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 
+import '../providers/ping_provider.dart';
 import 'pager_screen.dart';
 import '../helpers.dart';
 
@@ -45,14 +47,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   try {
                     final userCredential = await FirebaseAuth.instance
                         .signInAnonymously();
-                    db.collection('Users').doc(userCredential.user?.uid).set({
+                    final uid = userCredential.user?.uid;
+                    db.collection('Users').doc(uid).set({
                       "username": usernameController.text,
                       "friends": [],
                     });
                     printDebug(
-                      'Signed in with temporary acccount ${userCredential.user?.uid}',
+                      'Signed in with temporary acccount ${uid}',
                     );
                     if (context.mounted) {
+                      Provider.of<PingProvider>(context, listen: false).startListening(uid!);
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => PagerScreen()),
