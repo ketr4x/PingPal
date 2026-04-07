@@ -22,6 +22,16 @@ class _FriendsScreenState extends State<FriendsScreen> {
       .doc(uid)
       .snapshots();
 
+  Future<Map<String, String>> _loadFriendMap(List<String> friendUids) async {
+    final entries = await Future.wait(
+      friendUids.map((uid) async {
+        final username = await getUsernameByUid(uid);
+        return MapEntry(uid, username);
+      })
+    );
+    return Map.fromEntries(entries);
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
@@ -68,20 +78,33 @@ class _FriendsScreenState extends State<FriendsScreen> {
               child: Column(
                 children: [
                   Expanded(
-                    child: ListView(
-                      children: friends
-                          .map(
-                            (uid) => ListTile(
-                              title: Text(uid),
-                              trailing: IconButton(
-                                onPressed: () {
+                    child: FutureBuilder(
+                      future: _loadFriendMap(friends),
+                      builder: (context, friendMapSnapshot) {
+                        if (!friendMapSnapshot.hasData) {
+                          return const Scaffold(
+                            body: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+                        final friendMap = friendMapSnapshot.data!;
 
-                                },
-                                icon: Icon(Icons.notification_add),
+                        return ListView(
+                          children: friendMap.entries.map((entry) {
+                            final friendUid = entry.key;
+                            final username = entry.value;
+
+                            return Card(
+                              child: ListTile(
+                                title: Text(username),
+                                trailing: IconButton(
+                                    onPressed: () => sendPing(friendUid),
+                                    icon: Icon(Icons.notification_add)
+                                ),
                               ),
-                            ),
-                          )
-                          .toList(),
+                            );
+                          }).toList()
+                        );
+                      }
                     ),
                   ),
                 ],
