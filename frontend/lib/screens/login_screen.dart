@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 import '../providers/ping_provider.dart';
 import 'pager_screen.dart';
@@ -48,15 +49,47 @@ class _LoginScreenState extends State<LoginScreen> {
                     final userCredential = await FirebaseAuth.instance
                         .signInAnonymously();
                     final uid = userCredential.user?.uid;
-                    db.collection('Users').doc(uid).set({
+
+                    printDebug('Signed in with temporary account $uid');
+
+                    NotificationSettings permission = await FirebaseMessaging.instance.requestPermission();
+                    if (permission.authorizationStatus == AuthorizationStatus.denied){
+                      printDebug('Notifications disabled');
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Notifications disabled'),
+                            duration: Duration(seconds: 3),
+                          ),
+                        );
+                      });
+                    }
+
+                    final matchingUsers = await db.collection('Users').where('username', isEqualTo: usernameController.text).count().get();
+                    if (matchingUsers.count! > 0) {
+                      printDebug('Username is already taken');
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Username is already taken'),
+                            duration: Duration(seconds: 3),
+                          ),
+                        );
+                      });
+                      throw Exception('Username is already taken');
+                    }
+
+                    await db.collection('Users').doc(uid).update({
                       "username": usernameController.text,
                       "friends": [],
+                      "fcm_token": await FirebaseMessaging.instance.getToken()
                     });
-                    printDebug(
-                      'Signed in with temporary acccount ${uid}',
-                    );
+
                     if (context.mounted) {
-                      Provider.of<PingProvider>(context, listen: false).startListening(uid!);
+                      Provider.of<PingProvider>(
+                        context,
+                        listen: false,
+                      ).startListening(uid!);
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => PagerScreen()),

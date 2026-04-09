@@ -46,5 +46,4 @@ class PingProvider extends ChangeNotifier {
     await _pingsSub?.cancel();
     _pingsSub = null;
   }
-
 }
