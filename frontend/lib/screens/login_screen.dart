@@ -65,23 +65,25 @@ class _LoginScreenState extends State<LoginScreen> {
                       });
                     }
 
-                    final matchingUsernameUsers = await db.collection('Users').where('username', isEqualTo: usernameController.text).count().get();
-                    final matchingUidUser = await db.collection('Users').doc(uid).get();
-                    if (matchingUsernameUsers.count! > 0 && matchingUidUser.exists != false) {
-                      printDebug('Username is already taken');
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Username is already taken'),
-                            duration: Duration(seconds: 3),
-                          ),
-                        );
-                      });
-                      throw Exception('Username is already taken');
+                    final matchingUsernameUser = await db.collection('Users').where('username', isEqualTo: usernameController.text.trim()).get();
+                    if (matchingUsernameUser.docs.isNotEmpty) {
+                      final docId = matchingUsernameUser.docs.first.id;
+                      if (docId != uid) {
+                        printDebug('Username is already taken');
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Username is already taken'),
+                              duration: Duration(seconds: 3),
+                            ),
+                          );
+                        });
+                        throw Exception('Username is already taken');
+                      }
                     }
 
                     await db.collection('Users').doc(uid).set({
-                      "username": usernameController.text,
+                      "username": usernameController.text.trim(),
                       "friends": [],
                       "fcm_token": await FirebaseMessaging.instance.getToken()
                     });
