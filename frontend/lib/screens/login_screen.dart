@@ -65,8 +65,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       });
                     }
 
-                    final matchingUsers = await db.collection('Users').where('username', isEqualTo: usernameController.text).count().get();
-                    if (matchingUsers.count! > 0) {
+                    final matchingUsernameUsers = await db.collection('Users').where('username', isEqualTo: usernameController.text).count().get();
+                    final matchingUidUser = await db.collection('Users').doc(uid).get();
+                    if (matchingUsernameUsers.count! > 0 && matchingUidUser.exists != false) {
                       printDebug('Username is already taken');
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -79,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       throw Exception('Username is already taken');
                     }
 
-                    await db.collection('Users').doc(uid).update({
+                    await db.collection('Users').doc(uid).set({
                       "username": usernameController.text,
                       "friends": [],
                       "fcm_token": await FirebaseMessaging.instance.getToken()
