@@ -52,8 +52,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     printDebug('Signed in with temporary account $uid');
 
-                    NotificationSettings permission = await FirebaseMessaging.instance.requestPermission();
-                    if (permission.authorizationStatus == AuthorizationStatus.denied){
+                    NotificationSettings permission = await FirebaseMessaging
+                        .instance
+                        .requestPermission();
+                    if (permission.authorizationStatus ==
+                        AuthorizationStatus.denied) {
                       printDebug('Notifications disabled');
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -65,7 +68,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       });
                     }
 
-                    final matchingUsernameUser = await db.collection('Users').where('username', isEqualTo: usernameController.text.trim()).get();
+                    final matchingUsernameUser = await db
+                        .collection('Users')
+                        .where(
+                          'username',
+                          isEqualTo: usernameController.text.trim(),
+                        )
+                        .get();
                     if (matchingUsernameUser.docs.isNotEmpty) {
                       final docId = matchingUsernameUser.docs.first.id;
                       if (docId != uid) {
@@ -85,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     await db.collection('Users').doc(uid).set({
                       "username": usernameController.text.trim(),
                       "friends": [],
-                      "fcm_token": await FirebaseMessaging.instance.getToken()
+                      "fcm_token": await FirebaseMessaging.instance.getToken(),
                     });
 
                     if (context.mounted) {
