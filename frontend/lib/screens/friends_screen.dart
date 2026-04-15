@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../helpers.dart';
+import '../handlers/database_handler.dart';
 import 'add_friend_screen.dart';
 
 class FriendsScreen extends StatefulWidget {
@@ -96,9 +97,20 @@ class _FriendsScreenState extends State<FriendsScreen> {
                             return Card(
                               child: ListTile(
                                 title: Text(username),
-                                trailing: IconButton(
-                                  onPressed: () => sendPing(friendUid),
-                                  icon: Icon(Icons.notification_add),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      onPressed: () =>
+                                          sendPing(friendUid, false),
+                                      icon: Icon(Icons.notification_add),
+                                    ),
+                                    IconButton(
+                                      onPressed: () =>
+                                          sendPing(friendUid, true),
+                                      icon: Icon(Icons.location_pin),
+                                    ),
+                                  ],
                                 ),
                               ),
                             );

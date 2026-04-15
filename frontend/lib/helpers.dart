@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -40,39 +38,4 @@ BottomNavigationBar bottomNavBar(BuildContext context, int currentIndex) {
       );
     },
   );
-}
-
-Future<void> sendPing(String receiverUid) async {
-  try {
-    final senderUid = FirebaseAuth.instance.currentUser!.uid;
-    FirebaseFirestore db = FirebaseFirestore.instance;
-
-    if (receiverUid.isEmpty) {
-      printDebug('Receiver username is empty');
-      return;
-    }
-
-    await db.collection('Pings').add({
-      'sender': senderUid,
-      'receiver': receiverUid,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
-  } catch (e) {
-    printDebug('Unable to send the ping');
-  }
-}
-
-Future<String> getUsernameByUid(String uid) async {
-  FirebaseFirestore db = FirebaseFirestore.instance;
-  final userDoc = await db.collection('Users').doc(uid).get();
-  return userDoc.data()?['username'];
-}
-
-Future<String> getUidByUsername(String username) async {
-  FirebaseFirestore db = FirebaseFirestore.instance;
-  final userDoc = await db
-      .collection('Users')
-      .where('username', isEqualTo: username)
-      .get();
-  return userDoc.docs.first.id;
 }

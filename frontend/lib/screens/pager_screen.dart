@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../handlers/database_handler.dart';
 import '../helpers.dart';
 
 class PagerScreen extends StatefulWidget {
@@ -49,7 +50,7 @@ class _PagerScreenState extends State<PagerScreen> {
                   final receiverUid = await getUidByUsername(
                     usernameController.text.trim(),
                   );
-                  sendPing(receiverUid);
+                  sendPing(receiverUid, false);
                 },
                 child: const Icon(Icons.send),
               ),

@@ -1,0 +1,19 @@
+import 'package:geolocator/geolocator.dart';
+
+import '../helpers.dart';
+
+Future<Position?> getCurrentLocation() async {
+  final permission = await Geolocator.checkPermission();
+  if (permission == LocationPermission.denied) {
+    await Geolocator.requestPermission();
+  }
+
+  if (permission != LocationPermission.whileInUse &&
+      permission != LocationPermission.always) {
+    return null;
+  }
+
+  final location = await Geolocator.getCurrentPosition();
+  printDebug("Current location is $location");
+  return location;
+}

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
-import 'background_handler.dart';
+import 'handlers/background_handler.dart';
 import 'providers/ping_provider.dart';
 import 'globals.dart';
 import 'firebase_options.dart';
