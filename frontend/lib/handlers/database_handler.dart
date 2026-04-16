@@ -1,13 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../globals.dart';
 import 'location_service.dart';
 import '../helpers.dart';
 
 Future<void> sendPing(String receiverUid, bool useLocation) async {
   try {
     final senderUid = FirebaseAuth.instance.currentUser!.uid;
-    FirebaseFirestore db = FirebaseFirestore.instance;
     double? longitude;
     double? latitude;
 

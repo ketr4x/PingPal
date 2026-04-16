@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../globals.dart';
 import '../helpers.dart';
 import '../handlers/location_service.dart';
 
@@ -15,6 +16,8 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   final _selectedIndex = 2;
+
+  final query = db;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +37,10 @@ class _MapScreenState extends State<MapScreen> {
 
         final latitude = locationSnapshot.data?.latitude;
         final longitude = locationSnapshot.data?.longitude;
-        if (latitude == null || longitude == null || !latitude.isFinite || !longitude.isFinite) {
+        if (latitude == null ||
+            longitude == null ||
+            !latitude.isFinite ||
+            !longitude.isFinite) {
           return const Scaffold(
             body: Center(child: Text('Cannot get valid location data')),
           );
@@ -44,9 +50,7 @@ class _MapScreenState extends State<MapScreen> {
           appBar: AppBar(title: const Text('Map')),
           body: FlutterMap(
             mapController: MapController(),
-            options: MapOptions(
-              initialCenter: LatLng(latitude, longitude)
-            ),
+            options: MapOptions(initialCenter: LatLng(latitude, longitude)),
             children: [
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -54,8 +58,15 @@ class _MapScreenState extends State<MapScreen> {
               ),
               MarkerLayer(
                 markers: [
-                  Marker(point: LatLng(latitude, longitude), child: Icon(Icons.location_pin, color: Colors.red, size: 40))
-                ]
+                  Marker(
+                    point: LatLng(latitude, longitude),
+                    child: Icon(
+                      Icons.location_pin,
+                      color: Colors.red,
+                      size: 40,
+                    ),
+                  ),
+                ],
               ),
               RichAttributionWidget(
                 attributions: [

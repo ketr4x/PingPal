@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
+import '../globals.dart';
 import '../providers/ping_provider.dart';
 import 'pager_screen.dart';
 import '../helpers.dart';
@@ -17,8 +17,6 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final usernameController = TextEditingController();
-
-  FirebaseFirestore db = FirebaseFirestore.instance;
 
   @override
   void dispose() {

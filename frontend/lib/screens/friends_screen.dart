@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../globals.dart';
 import '../helpers.dart';
 import '../handlers/database_handler.dart';
 import 'add_friend_screen.dart';
@@ -17,7 +18,6 @@ class _FriendsScreenState extends State<FriendsScreen> {
   final _selectedIndex = 1;
 
   final uid = FirebaseAuth.instance.currentUser!.uid;
-  FirebaseFirestore db = FirebaseFirestore.instance;
   late final Stream<DocumentSnapshot<Map<String, dynamic>>> _userDocStream = db
       .collection('Users')
       .doc(uid)

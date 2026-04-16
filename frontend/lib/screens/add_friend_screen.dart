@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../globals.dart';
 import '../helpers.dart';
 
 class AddFriendScreen extends StatefulWidget {
@@ -13,8 +14,6 @@ class AddFriendScreen extends StatefulWidget {
 
 class _AddFriendScreenState extends State<AddFriendScreen> {
   final usernameController = TextEditingController();
-
-  FirebaseFirestore db = FirebaseFirestore.instance;
 
   final uid = FirebaseAuth.instance.currentUser!.uid;
 

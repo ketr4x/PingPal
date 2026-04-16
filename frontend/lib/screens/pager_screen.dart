@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../handlers/database_handler.dart';
 import '../helpers.dart';
@@ -16,8 +15,6 @@ class _PagerScreenState extends State<PagerScreen> {
   final _selectedIndex = 0;
 
   final usernameController = TextEditingController();
-
-  FirebaseFirestore db = FirebaseFirestore.instance;
 
   final uid = FirebaseAuth.instance.currentUser!.uid;
   Map<String, dynamic>? userData;
