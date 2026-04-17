@@ -1,13 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
-import '../globals.dart';
 import 'location_service.dart';
 import '../helpers.dart';
 
+FirebaseFirestore db = FirebaseFirestore.instance;
+
 Future<void> sendPing(String receiverUid, bool useLocation) async {
   try {
-    final senderUid = FirebaseAuth.instance.currentUser!.uid;
+    final senderUid = getUid();
     double? longitude;
     double? latitude;
 
@@ -35,13 +35,11 @@ Future<void> sendPing(String receiverUid, bool useLocation) async {
 }
 
 Future<String> getUsernameByUid(String uid) async {
-  FirebaseFirestore db = FirebaseFirestore.instance;
   final userDoc = await db.collection('Users').doc(uid).get();
   return userDoc.data()?['username'];
 }
 
 Future<String> getUidByUsername(String username) async {
-  FirebaseFirestore db = FirebaseFirestore.instance;
   final userDoc = await db
       .collection('Users')
       .where('username', isEqualTo: username)

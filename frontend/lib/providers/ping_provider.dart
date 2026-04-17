@@ -3,9 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../globals.dart';
+import '../handlers/database_handler.dart';
 
 class PingProvider extends ChangeNotifier {
-  FirebaseFirestore db = FirebaseFirestore.instance;
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _pingsSub;
   bool _hasSeenFirstSnapshot = false;
 

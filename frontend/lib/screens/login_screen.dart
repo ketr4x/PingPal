@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
-import '../globals.dart';
+import '../handlers/database_handler.dart';
 import '../providers/ping_provider.dart';
 import 'pager_screen.dart';
 import '../helpers.dart';

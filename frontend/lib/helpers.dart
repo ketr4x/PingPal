@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -43,4 +44,9 @@ BottomNavigationBar bottomNavBar(BuildContext context, int currentIndex) {
       );
     },
   );
+}
+
+String getUid() {
+  final uid = FirebaseAuth.instance.currentUser!.uid;
+  return uid;
 }
