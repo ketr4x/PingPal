@@ -1,13 +1,28 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_marker_popup/flutter_map_marker_popup.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 
 import '../handlers/database_handler.dart';
-import '../helpers.dart';
 import '../handlers/location_service.dart';
+import '../helpers.dart';
+
+class PingMarker extends Marker {
+  const PingMarker({
+    required this.senderUid,
+    required this.timestamp,
+    required super.point,
+  }) : super(
+         width: 40,
+         height: 40,
+         child: const Icon(Icons.location_pin, color: Colors.blue, size: 30),
+       );
+
+  final String senderUid;
+  final Timestamp timestamp;
+}
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -20,6 +35,9 @@ class _MapScreenState extends State<MapScreen> {
   final _selectedIndex = 2;
 
   final uid = getUid();
+
+  final _mapController = MapController();
+  final _popupController = PopupController();
 
   final Map<String, Future<String>> _usernameFutureCache = {};
   Future<String> _getUsernameFuture(String uid) {
@@ -90,8 +108,19 @@ class _MapScreenState extends State<MapScreen> {
                 );
               }
 
+              final List<Marker> staticMarkers = [
+                Marker(
+                  point: LatLng(latitude, longitude),
+                  key: const ValueKey('current-location'),
+                  child: const Icon(
+                    Icons.location_pin,
+                    color: Colors.red,
+                    size: 30,
+                  ),
+                ),
+              ];
+
               final List<Marker> pingMarkers = [];
-              final Map<Marker, Map<String, dynamic>> markerMeta = {};
 
               for (final doc in pingSnapshot.data!.docs) {
                 if (!doc.data().containsKey('latitude') ||
@@ -110,117 +139,107 @@ class _MapScreenState extends State<MapScreen> {
                   continue;
                 }
 
+                final rawSenderUid = doc.data()['sender'];
+                final rawTimestamp = doc.data()['timestamp'];
+
+                if (rawSenderUid is! String || rawTimestamp is! Timestamp) {
+                  printDebug(
+                    'Skipping ping ${doc.id}: sender or timestamp has invalid type',
+                  );
+                  continue;
+                }
+
                 final pointLatitude = rawLatitude.toDouble();
                 final pointLongitude = rawLongitude.toDouble();
 
-                printDebug(
-                  "Found a valid ping @ $pointLatitude $pointLongitude",
+                pingMarkers.add(
+                  PingMarker(
+                    senderUid: rawSenderUid,
+                    timestamp: rawTimestamp,
+                    point: LatLng(pointLatitude, pointLongitude),
+                  ),
                 );
-                final marker = Marker(
-                  point: LatLng(pointLatitude, pointLongitude),
-                  child: Icon(Icons.location_pin, color: Colors.blue, size: 30),
-                );
-                pingMarkers.add(marker);
-
-                final senderUid = doc.get('sender');
-                final time = doc.get('timestamp');
-                markerMeta[marker] = {
-                  'senderUid': senderUid,
-                  'timestamp': time,
-                };
               }
 
-              return PopupScope(
-                child: FlutterMap(
-                  mapController: MapController(),
-                  options: MapOptions(
-                    initialCenter: LatLng(latitude, longitude),
+              return FlutterMap(
+                mapController: _mapController,
+                options: MapOptions(
+                  initialCenter: LatLng(latitude, longitude),
+                  onTap: (_, __) => _popupController.hideAllPopups(),
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.ketr4x.pingpal',
                   ),
-                  children: [
-                    TileLayer(
-                      urlTemplate:
-                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                      userAgentPackageName: 'com.ketr4x.pingpal',
-                    ),
-                    MarkerClusterLayerWidget(
-                      options: MarkerClusterLayerOptions(
-                        maxClusterRadius: 30,
-                        size: Size(30, 30),
-                        alignment: Alignment.center,
-                        padding: EdgeInsets.all(50),
-                        markers: [
-                          Marker(
-                            point: LatLng(latitude, longitude),
-                            child: Icon(
-                              Icons.location_pin,
-                              color: Colors.red,
-                              size: 30,
-                            ),
-                          ),
-                          ...pingMarkers,
-                        ],
-                        builder: (context, pingMarkers) {
-                          return Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(15),
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            child: Center(
-                              child: Text(pingMarkers.length.toString()),
-                            ),
-                          );
-                        },
-                        popupOptions: PopupOptions(
-                          markerTapBehavior: MarkerTapBehavior.togglePopup(),
-                          popupSnap: PopupSnap.markerTop,
-                          popupBuilder: (context, marker) {
-                            final meta = markerMeta[marker];
-                            if (meta == null) return Text('Ping');
+                  MarkerLayer(markers: staticMarkers),
+                  PopupMarkerLayer(
+                    options: PopupMarkerLayerOptions(
+                      markers: pingMarkers,
+                      popupController: _popupController,
+                      markerTapBehavior:
+                          MarkerTapBehavior.togglePopupAndHideRest(),
+                      popupDisplayOptions: PopupDisplayOptions(
+                        builder: (context, marker) {
+                          if (marker is! PingMarker) {
+                            return const SizedBox.shrink();
+                          }
 
-                            final senderUid = meta['senderUid'] as String;
-                            final timestamp = _formatTimestamp(
-                              meta['timestamp'],
-                            );
+                          final timestamp = _formatTimestamp(marker.timestamp);
 
-                            return FutureBuilder(
-                              future: _getUsernameFuture(senderUid),
+                          return SizedBox(
+                            width: 220,
+                            child: FutureBuilder<String>(
+                              future: _getUsernameFuture(marker.senderUid),
                               builder: (context, usernameSnapshot) {
                                 if (usernameSnapshot.connectionState !=
                                     ConnectionState.done) {
-                                  return const Text('Loading user...');
+                                  return const Card(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Text('Loading user...'),
+                                    ),
+                                  );
                                 }
+
                                 if (usernameSnapshot.hasError) {
-                                  return const Text('Could not load user');
+                                  return const Card(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Text('Could not load user'),
+                                    ),
+                                  );
                                 }
 
                                 final username =
                                     usernameSnapshot.data ?? 'Unknown username';
+
                                 return Card(
                                   child: Padding(
-                                    padding: EdgeInsetsGeometry.all(8),
+                                    padding: const EdgeInsets.all(8.0),
                                     child: Text(
                                       'Ping from $username\nSent at $timestamp',
                                     ),
                                   ),
                                 );
                               },
-                            );
-                          },
-                        ),
+                            ),
+                          );
+                        },
                       ),
                     ),
-                    RichAttributionWidget(
-                      attributions: [
-                        TextSourceAttribution(
-                          'OpenStreetMap contributors',
-                          onTap: () => launchUrl(
-                            Uri.parse('https://openstreetmap.org/copyright'),
-                          ),
+                  ),
+                  RichAttributionWidget(
+                    attributions: [
+                      TextSourceAttribution(
+                        'OpenStreetMap contributors',
+                        onTap: () => launchUrl(
+                          Uri.parse('https://openstreetmap.org/copyright'),
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               );
             },
           ),
