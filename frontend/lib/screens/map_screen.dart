@@ -1,28 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_map_marker_popup/flutter_map_marker_popup.dart';
+import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../handlers/database_handler.dart';
 import '../handlers/location_service.dart';
 import '../helpers.dart';
-
-class PingMarker extends Marker {
-  const PingMarker({
-    required this.senderUid,
-    required this.timestamp,
-    required super.point,
-  }) : super(
-         width: 40,
-         height: 40,
-         child: const Icon(Icons.location_pin, color: Colors.blue, size: 30),
-       );
-
-  final String senderUid;
-  final Timestamp timestamp;
-}
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -37,7 +22,7 @@ class _MapScreenState extends State<MapScreen> {
   final uid = getUid();
 
   final _mapController = MapController();
-  final _popupController = PopupController();
+  String? _selectedPingId;
 
   final Map<String, Future<String>> _usernameFutureCache = {};
   Future<String> _getUsernameFuture(String uid) {
@@ -63,6 +48,74 @@ class _MapScreenState extends State<MapScreen> {
     final hour = dt.hour.toString().padLeft(2, '0');
     final minute = dt.minute.toString().padLeft(2, '0');
     return '$day/$month/$year $hour:$minute';
+  }
+
+  Marker _buildPingPopupMarker({
+    required LatLng point,
+    required String senderUid,
+    required Timestamp timestamp,
+  }) {
+    final timestampText = _formatTimestamp(timestamp);
+
+    return Marker(
+      point: point,
+      width: 200,
+      height: 90,
+      alignment: const Alignment(0, 0.65),
+      child: IgnorePointer(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Transform.translate(
+              offset: const Offset(0, 30),
+              child: Container(
+                width: 150,
+                margin: const EdgeInsets.only(bottom: 4),
+                padding: const EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: FutureBuilder<String>(
+                  future: _getUsernameFuture(senderUid),
+                  builder: (context, usernameSnapshot) {
+                    if (usernameSnapshot.connectionState != ConnectionState.done) {
+                      return const Text(
+                        'Loading user...',
+                        textAlign: TextAlign.center,
+                      );
+                    }
+
+                    if (usernameSnapshot.hasError) {
+                      return const Text(
+                        'Could not load user',
+                        textAlign: TextAlign.center,
+                      );
+                    }
+
+                    final username = usernameSnapshot.data ?? 'Unknown username';
+
+                    return Text(
+                      'Ping from $username\nSent at $timestampText',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -112,6 +165,7 @@ class _MapScreenState extends State<MapScreen> {
                 Marker(
                   point: LatLng(latitude, longitude),
                   key: const ValueKey('current-location'),
+                  alignment: Alignment.bottomCenter,
                   child: const Icon(
                     Icons.location_pin,
                     color: Colors.red,
@@ -121,6 +175,7 @@ class _MapScreenState extends State<MapScreen> {
               ];
 
               final List<Marker> pingMarkers = [];
+              QueryDocumentSnapshot<Map<String, dynamic>>? selectedPingDoc;
 
               for (final doc in pingSnapshot.data!.docs) {
                 if (!doc.data().containsKey('latitude') ||
@@ -139,33 +194,82 @@ class _MapScreenState extends State<MapScreen> {
                   continue;
                 }
 
-                final rawSenderUid = doc.data()['sender'];
-                final rawTimestamp = doc.data()['timestamp'];
+                final point = LatLng(
+                  rawLatitude.toDouble(),
+                  rawLongitude.toDouble(),
+                );
 
-                if (rawSenderUid is! String || rawTimestamp is! Timestamp) {
-                  printDebug(
-                    'Skipping ping ${doc.id}: sender or timestamp has invalid type',
-                  );
-                  continue;
+                if (doc.id == _selectedPingId) {
+                  selectedPingDoc = doc;
                 }
 
-                final pointLatitude = rawLatitude.toDouble();
-                final pointLongitude = rawLongitude.toDouble();
-
                 pingMarkers.add(
-                  PingMarker(
-                    senderUid: rawSenderUid,
-                    timestamp: rawTimestamp,
-                    point: LatLng(pointLatitude, pointLongitude),
+                  Marker(
+                    key: ValueKey(doc.id),
+                    point: point,
+                    width: 40,
+                    height: 40,
+                    alignment: Alignment.bottomCenter,
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedPingId =
+                              _selectedPingId == doc.id ? null : doc.id;
+                        });
+                      },
+                      child: const Icon(
+                        Icons.location_pin,
+                        color: Colors.blue,
+                        size: 30,
+                      ),
+                    ),
                   ),
                 );
+              }
+
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!mounted) return;
+                if (_selectedPingId != null && selectedPingDoc == null) {
+                  setState(() {
+                    _selectedPingId = null;
+                  });
+                }
+              });
+
+              Marker? selectedPopupMarker;
+              if (selectedPingDoc != null) {
+                final data = selectedPingDoc.data();
+                final rawLatitude = data['latitude'];
+                final rawLongitude = data['longitude'];
+                final rawSenderUid = data['sender'];
+                final rawTimestamp = data['timestamp'];
+
+                if (rawLatitude is num &&
+                    rawLongitude is num &&
+                    rawSenderUid is String &&
+                    rawTimestamp is Timestamp) {
+                  selectedPopupMarker = _buildPingPopupMarker(
+                    point: LatLng(
+                      rawLatitude.toDouble(),
+                      rawLongitude.toDouble(),
+                    ),
+                    senderUid: rawSenderUid,
+                    timestamp: rawTimestamp,
+                  );
+                }
               }
 
               return FlutterMap(
                 mapController: _mapController,
                 options: MapOptions(
                   initialCenter: LatLng(latitude, longitude),
-                  onTap: (_, __) => _popupController.hideAllPopups(),
+                  onTap: (_, _) {
+                    if (_selectedPingId != null) {
+                      setState(() {
+                        _selectedPingId = null;
+                      });
+                    }
+                  },
                 ),
                 children: [
                   TileLayer(
@@ -173,62 +277,31 @@ class _MapScreenState extends State<MapScreen> {
                     userAgentPackageName: 'com.ketr4x.pingpal',
                   ),
                   MarkerLayer(markers: staticMarkers),
-                  PopupMarkerLayer(
-                    options: PopupMarkerLayerOptions(
+                  MarkerClusterLayerWidget(
+                    options: MarkerClusterLayerOptions(
+                      maxClusterRadius: 40,
+                      size: const Size(40, 40),
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.all(50),
                       markers: pingMarkers,
-                      popupController: _popupController,
-                      markerTapBehavior:
-                          MarkerTapBehavior.togglePopupAndHideRest(),
-                      popupDisplayOptions: PopupDisplayOptions(
-                        builder: (context, marker) {
-                          if (marker is! PingMarker) {
-                            return const SizedBox.shrink();
-                          }
-
-                          final timestamp = _formatTimestamp(marker.timestamp);
-
-                          return SizedBox(
-                            width: 220,
-                            child: FutureBuilder<String>(
-                              future: _getUsernameFuture(marker.senderUid),
-                              builder: (context, usernameSnapshot) {
-                                if (usernameSnapshot.connectionState !=
-                                    ConnectionState.done) {
-                                  return const Card(
-                                    child: Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Text('Loading user...'),
-                                    ),
-                                  );
-                                }
-
-                                if (usernameSnapshot.hasError) {
-                                  return const Card(
-                                    child: Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Text('Could not load user'),
-                                    ),
-                                  );
-                                }
-
-                                final username =
-                                    usernameSnapshot.data ?? 'Unknown username';
-
-                                return Card(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      'Ping from $username\nSent at $timestamp',
-                                    ),
-                                  ),
-                                );
-                              },
+                      builder: (context, markers) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          child: Center(
+                            child: Text(
+                              markers.length.toString(),
+                              style: const TextStyle(color: Colors.white),
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      },
                     ),
                   ),
+                  if (selectedPopupMarker != null)
+                    MarkerLayer(markers: [selectedPopupMarker]),
                   RichAttributionWidget(
                     attributions: [
                       TextSourceAttribution(
