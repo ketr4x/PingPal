@@ -20,14 +20,24 @@ Future<void> sendPing(String receiverUid, bool useLocation) async {
       final location = await getCurrentLocation();
       latitude = location?.latitude;
       longitude = location?.longitude;
+
+      final invalid =
+          latitude == null ||
+          longitude == null ||
+          !latitude.isFinite ||
+          !longitude.isFinite;
+      if (invalid) {
+        printDebug('Not sending ping: invalid location');
+        return;
+      }
     }
 
     await db.collection('Pings').add({
       'sender': senderUid,
       'receiver': receiverUid,
       'timestamp': FieldValue.serverTimestamp(),
-      'latitude': useLocation ? latitude : null,
-      'longitude': useLocation ? longitude : null,
+      if (useLocation) 'latitude': latitude,
+      if (useLocation) 'longitude': longitude,
     });
   } catch (e) {
     printDebug('Unable to send the ping');
