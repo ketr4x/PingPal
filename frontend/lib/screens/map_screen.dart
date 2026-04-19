@@ -68,51 +68,47 @@ class _MapScreenState extends State<MapScreen> {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Transform.translate(
-              offset: const Offset(0, 30),
-              child: Container(
-                width: 150,
-                margin: const EdgeInsets.only(bottom: 4),
-                padding: const EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: FutureBuilder<String>(
-                  future: _getUsernameFuture(senderUid),
-                  builder: (context, usernameSnapshot) {
-                    if (usernameSnapshot.connectionState !=
-                        ConnectionState.done) {
-                      return const Text(
-                        'Loading user...',
-                        textAlign: TextAlign.center,
-                      );
-                    }
-
-                    if (usernameSnapshot.hasError) {
-                      return const Text(
-                        'Could not load user',
-                        textAlign: TextAlign.center,
-                      );
-                    }
-
-                    final username =
-                        usernameSnapshot.data ?? 'Unknown username';
-
-                    return Text(
-                      'Ping from $username\nSent at $timestampText',
+            Container(
+              width: 150,
+              margin: const EdgeInsets.only(bottom: 4),
+              padding: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: FutureBuilder<String>(
+                future: _getUsernameFuture(senderUid),
+                builder: (context, usernameSnapshot) {
+                  if (usernameSnapshot.connectionState !=
+                      ConnectionState.done) {
+                    return const Text(
+                      'Loading user...',
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall,
                     );
-                  },
-                ),
+                  }
+
+                  if (usernameSnapshot.hasError) {
+                    return const Text(
+                      'Could not load user',
+                      textAlign: TextAlign.center,
+                    );
+                  }
+
+                  final username = usernameSnapshot.data ?? 'Unknown username';
+
+                  return Text(
+                    'Ping from $username\nSent at $timestampText',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  );
+                },
               ),
             ),
           ],
@@ -193,19 +189,34 @@ class _MapScreenState extends State<MapScreen> {
 
                 if (rawLatitude is! num || rawLongitude is! num) {
                   printDebug(
-                    'Skipping ping ${doc.id} @ $rawLatitude $rawLongitude: invalid value}',
+                    'Skipping ping ${doc.id} @ $rawLatitude $rawLongitude: invalid value',
                   );
                   continue;
                 }
 
-                final point = LatLng(
-                  rawLatitude.toDouble(),
-                  rawLongitude.toDouble(),
-                );
+                final lat = rawLatitude.toDouble();
+                final long = rawLongitude.toDouble();
+
+                if (!lat.isFinite ||
+                    !long.isFinite ||
+                    lat < -90 ||
+                    lat > 90 ||
+                    long < -180 ||
+                    long > 180) {
+                  printDebug(
+                    'Skipping ping ${doc.id} @ $rawLatitude $rawLongitude: invalid coordinates',
+                  );
+                }
+
+                final point = LatLng(lat, long);
 
                 if (doc.id == _selectedPingId) {
                   selectedPingDoc = doc;
                 }
+
+                printDebug(
+                  'Found a valid ping ${doc.id} @ $rawLatitude $rawLongitude',
+                );
 
                 pingMarkers.add(
                   Marker(
@@ -254,14 +265,21 @@ class _MapScreenState extends State<MapScreen> {
                     rawLongitude is num &&
                     rawSenderUid is String &&
                     rawTimestamp is Timestamp) {
-                  selectedPopupMarker = _buildPingPopupMarker(
-                    point: LatLng(
-                      rawLatitude.toDouble(),
-                      rawLongitude.toDouble(),
-                    ),
-                    senderUid: rawSenderUid,
-                    timestamp: rawTimestamp,
-                  );
+                  final lat = rawLatitude.toDouble();
+                  final long = rawLongitude.toDouble();
+
+                  if (lat.isFinite &&
+                      long.isFinite &&
+                      lat >= -90 &&
+                      lat <= 90 &&
+                      long >= -180 &&
+                      long <= 180) {
+                    selectedPopupMarker = _buildPingPopupMarker(
+                      point: LatLng(lat, long),
+                      senderUid: rawSenderUid,
+                      timestamp: rawTimestamp,
+                    );
+                  }
                 }
               }
 
