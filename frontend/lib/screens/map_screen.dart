@@ -62,6 +62,7 @@ class _MapScreenState extends State<MapScreen> {
       width: 200,
       height: 90,
       alignment: const Alignment(0, 0.65),
+      rotate: true,
       child: IgnorePointer(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -87,7 +88,8 @@ class _MapScreenState extends State<MapScreen> {
                 child: FutureBuilder<String>(
                   future: _getUsernameFuture(senderUid),
                   builder: (context, usernameSnapshot) {
-                    if (usernameSnapshot.connectionState != ConnectionState.done) {
+                    if (usernameSnapshot.connectionState !=
+                        ConnectionState.done) {
                       return const Text(
                         'Loading user...',
                         textAlign: TextAlign.center,
@@ -101,7 +103,8 @@ class _MapScreenState extends State<MapScreen> {
                       );
                     }
 
-                    final username = usernameSnapshot.data ?? 'Unknown username';
+                    final username =
+                        usernameSnapshot.data ?? 'Unknown username';
 
                     return Text(
                       'Ping from $username\nSent at $timestampText',
@@ -165,7 +168,8 @@ class _MapScreenState extends State<MapScreen> {
                 Marker(
                   point: LatLng(latitude, longitude),
                   key: const ValueKey('current-location'),
-                  alignment: Alignment.bottomCenter,
+                  alignment: Alignment.topCenter,
+                  rotate: true,
                   child: const Icon(
                     Icons.location_pin,
                     color: Colors.red,
@@ -209,12 +213,14 @@ class _MapScreenState extends State<MapScreen> {
                     point: point,
                     width: 40,
                     height: 40,
-                    alignment: Alignment.bottomCenter,
+                    alignment: Alignment.topCenter,
+                    rotate: true,
                     child: GestureDetector(
                       onTap: () {
                         setState(() {
-                          _selectedPingId =
-                              _selectedPingId == doc.id ? null : doc.id;
+                          _selectedPingId = _selectedPingId == doc.id
+                              ? null
+                              : doc.id;
                         });
                       },
                       child: const Icon(
@@ -273,15 +279,16 @@ class _MapScreenState extends State<MapScreen> {
                 ),
                 children: [
                   TileLayer(
-                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'com.ketr4x.pingpal',
                   ),
-                  MarkerLayer(markers: staticMarkers),
                   MarkerClusterLayerWidget(
                     options: MarkerClusterLayerOptions(
                       maxClusterRadius: 40,
                       size: const Size(40, 40),
                       alignment: Alignment.center,
+                      rotate: true,
                       padding: const EdgeInsets.all(50),
                       markers: pingMarkers,
                       builder: (context, markers) {
@@ -300,6 +307,7 @@ class _MapScreenState extends State<MapScreen> {
                       },
                     ),
                   ),
+                  MarkerLayer(markers: staticMarkers),
                   if (selectedPopupMarker != null)
                     MarkerLayer(markers: [selectedPopupMarker]),
                   RichAttributionWidget(
