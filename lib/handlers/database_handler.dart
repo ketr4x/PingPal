@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'location_service.dart';
 import '../helpers.dart';
@@ -55,4 +56,12 @@ Future<String> getUidByUsername(String username) async {
       .where('username', isEqualTo: username)
       .get();
   return userDoc.docs.first.id;
+}
+
+Future<void> updateFcmToken() async {
+  final uid = getUid();
+
+  await db.collection('Users').doc(uid).set({
+    "fcm_token": await FirebaseMessaging.instance.getToken(),
+  });
 }

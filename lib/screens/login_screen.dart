@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../handlers/database_handler.dart';
-import '../providers/ping_provider.dart';
-import 'pager_screen.dart';
 import '../helpers.dart';
+import 'anonymous_login_screen.dart';
+import 'pager_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,100 +16,66 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final usernameController = TextEditingController();
+  final user = FirebaseAuth.instance.currentUser;
 
-  @override
-  void dispose() {
-    usernameController.dispose();
-    super.dispose();
+  Row buildLoginRow(String icon, double size) {
+    return Row(
+      children: [
+        SvgPicture.asset('assets/logos/$icon.svg', height: size, width: size),
+        Spacer(),
+        Text('Sign in with Google'),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    if (user != null) {
+      updateFcmToken();
+      return PagerScreen();
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Center(
+      appBar: AppBar(title: const Text('Welcome!')),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
           child: Column(
             children: [
-              TextField(
-                controller: usernameController,
-                decoration: const InputDecoration(
-                  border: UnderlineInputBorder(),
-                  labelText: 'Enter your username',
-                ),
-              ),
-              const SizedBox(height: 8),
-              ElevatedButton(
-                onPressed: () async {
-                  try {
-                    final userCredential = await FirebaseAuth.instance
-                        .signInAnonymously();
-                    final uid = userCredential.user?.uid;
-
-                    printDebug('Signed in with temporary account $uid');
-
-                    NotificationSettings permission = await FirebaseMessaging
-                        .instance
-                        .requestPermission();
-                    if (permission.authorizationStatus ==
-                        AuthorizationStatus.denied) {
-                      printDebug('Notifications disabled');
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Notifications disabled'),
-                            duration: Duration(seconds: 3),
-                          ),
-                        );
-                      });
-                    }
-
-                    final matchingUsernameUser = await db
-                        .collection('Users')
-                        .where(
-                          'username',
-                          isEqualTo: usernameController.text.trim(),
-                        )
-                        .get();
-                    if (matchingUsernameUser.docs.isNotEmpty) {
-                      final docId = matchingUsernameUser.docs.first.id;
-                      if (docId != uid) {
-                        printDebug('Username is already taken');
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Username is already taken'),
-                              duration: Duration(seconds: 3),
-                            ),
-                          );
-                        });
-                        throw Exception('Username is already taken');
-                      }
-                    }
-
-                    await db.collection('Users').doc(uid).set({
-                      "username": usernameController.text.trim(),
-                      "friends": [],
-                      "fcm_token": await FirebaseMessaging.instance.getToken(),
-                    });
-
-                    if (context.mounted) {
-                      Provider.of<PingProvider>(
+              Column(
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      Navigator.push(
                         context,
-                        listen: false,
-                      ).startListening(uid!);
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => PagerScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => AnonymousLoginScreen(),
+                        ),
                       );
-                    }
-                  } on FirebaseAuthException catch (e) {
-                    printDebug('Unable to sign in: $e');
-                  }
-                },
-                child: const Icon(Icons.send),
+                    },
+                    child: const Text('Log in as a guest...'),
+                  ),
+                  ElevatedButton(
+                    child: buildLoginRow('google', 30),
+                    onPressed: () async {
+                      await GoogleSignIn.instance.initialize(
+                        serverClientId: ' 526025104232-naf2pke6e52p3gvjp8s2imiiti8aqmid.apps.googleusercontent.com'
+                      );
+                      try {
+                        final googleUser = await GoogleSignIn.instance
+                            .authenticate();
+                        final googleAuth = googleUser.authentication;
+                        final credential = GoogleAuthProvider.credential(
+                          idToken: googleAuth.idToken,
+                        );
+                        final userCredential = await FirebaseAuth.instance
+                            .signInWithCredential(credential);
+                      } on GoogleSignInException catch (e) {
+                        printDebug('Unable to sign in: $e');
+                      }
+                    },
+                  ),
+                ],
               ),
             ],
           ),
