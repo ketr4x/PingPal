@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'location_service.dart';
@@ -64,4 +65,30 @@ Future<void> updateFcmToken() async {
   await db.collection('Users').doc(uid).set({
     "fcm_token": await FirebaseMessaging.instance.getToken(),
   });
+}
+
+Future<bool> checkUserExists() async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    final userDoc = await db.collection('Users').doc(user.uid).get();
+    if (userDoc.exists) {
+      return true;
+    }
+  }
+  return false;
+}
+
+Future<bool> checkUserComplete() async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    final userDoc = await db.collection('Users').doc(user.uid).get();
+    if (userDoc.exists) {
+      final username = userDoc.data()!.containsKey('username');
+      final usernameLower = userDoc.data()!.containsKey('username_lower');
+      if (username && usernameLower) {
+        return true;
+      }
+    }
+  }
+  return false;
 }

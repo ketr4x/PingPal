@@ -73,9 +73,10 @@ Future<void> getNotificationsPermission(BuildContext context) async {
 void enterApp(BuildContext context, String uid) {
   if (context.mounted) {
     Provider.of<PingProvider>(context, listen: false).startListening(uid);
-    Navigator.pushReplacement(
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => PagerScreen()),
+      (Route<dynamic> route) => false,
     );
   }
 }

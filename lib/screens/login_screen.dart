@@ -18,6 +18,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final user = FirebaseAuth.instance.currentUser;
+  bool userLoggedIn = false;
+  bool userComplete = false;
 
   Row buildLoginRow(String icon, double size) {
     return Row(
@@ -30,11 +32,35 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _handleExistingUser();
+  }
+
+  Future<void> _handleExistingUser() async {
+    final userExists = await checkUserExists();
+    if (userExists) {
+      setState(() {
+        userLoggedIn = true;
+      });
+      await updateFcmToken();
+
+      final userProfileComplete = await checkUserComplete();
+      if (userProfileComplete) {
+        setState(() {
+          userComplete = true;
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (user != null) {
-      // TODO: actually check db
-      updateFcmToken();
+    if (userLoggedIn && userComplete) {
       return PagerScreen();
+    }
+    if (userLoggedIn) {
+      return ChooseUsernameScreen();
     }
 
     return Scaffold(
