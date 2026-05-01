@@ -1,7 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import 'providers/ping_provider.dart';
 import 'screens/map_screen.dart';
 import 'screens/pager_screen.dart';
 import 'screens/friends_screen.dart';
@@ -49,4 +52,30 @@ BottomNavigationBar bottomNavBar(BuildContext context, int currentIndex) {
 String getUid() {
   final uid = FirebaseAuth.instance.currentUser!.uid;
   return uid;
+}
+
+Future<void> getNotificationsPermission(BuildContext context) async {
+  NotificationSettings permission = await FirebaseMessaging.instance
+      .requestPermission();
+  if (permission.authorizationStatus == AuthorizationStatus.denied) {
+    printDebug('Notifications disabled');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Notifications disabled'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    });
+  }
+}
+
+void enterApp(BuildContext context, String uid) {
+  if (context.mounted) {
+    Provider.of<PingProvider>(context, listen: false).startListening(uid);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => PagerScreen()),
+    );
+  }
 }

@@ -5,14 +5,14 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import '../handlers/database_handler.dart';
 import '../helpers.dart';
 
-class AnonymousLoginScreen extends StatefulWidget {
-  const AnonymousLoginScreen({super.key});
+class ChooseUsernameScreen extends StatefulWidget {
+  const ChooseUsernameScreen({super.key});
 
   @override
-  State<AnonymousLoginScreen> createState() => _AnonymousLoginScreenState();
+  State<ChooseUsernameScreen> createState() => _ChooseUsernameScreenState();
 }
 
-class _AnonymousLoginScreenState extends State<AnonymousLoginScreen> {
+class _ChooseUsernameScreenState extends State<ChooseUsernameScreen> {
   final usernameController = TextEditingController();
 
   @override
@@ -24,7 +24,7 @@ class _AnonymousLoginScreenState extends State<AnonymousLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      appBar: AppBar(title: const Text('Choose your username')),
       body: Padding(
         padding: const EdgeInsets.all(12),
         child: Center(
@@ -41,27 +41,7 @@ class _AnonymousLoginScreenState extends State<AnonymousLoginScreen> {
               ElevatedButton(
                 onPressed: () async {
                   try {
-                    final userCredential = await FirebaseAuth.instance
-                        .signInAnonymously();
-                    final uid = userCredential.user?.uid;
-
-                    printDebug('Signed in with temporary account $uid');
-
-                    NotificationSettings permission = await FirebaseMessaging
-                        .instance
-                        .requestPermission();
-                    if (permission.authorizationStatus ==
-                        AuthorizationStatus.denied) {
-                      printDebug('Notifications disabled');
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Notifications disabled'),
-                            duration: Duration(seconds: 3),
-                          ),
-                        );
-                      });
-                    }
+                    final uid = getUid();
 
                     final matchingUsernameUser = await db
                         .collection('Users')
@@ -88,11 +68,6 @@ class _AnonymousLoginScreenState extends State<AnonymousLoginScreen> {
                       }
                     }
 
-                    if (!context.mounted) {
-                      return;
-                    }
-
-                    await getNotificationsPermission(context);
                     await db.collection('Users').doc(uid).set({
                       "username": usernameController.text.trim(),
                       "username_lower": usernameController.text
@@ -105,7 +80,7 @@ class _AnonymousLoginScreenState extends State<AnonymousLoginScreen> {
                     if (!context.mounted) {
                       return;
                     }
-                    enterApp(context, uid!);
+                    enterApp(context, uid);
                   } on FirebaseAuthException catch (e) {
                     printDebug('Unable to sign in: $e');
                   }
