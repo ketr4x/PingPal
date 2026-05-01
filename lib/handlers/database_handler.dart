@@ -64,7 +64,7 @@ Future<void> updateFcmToken() async {
 
   await db.collection('Users').doc(uid).set({
     "fcm_token": await FirebaseMessaging.instance.getToken(),
-  });
+  }, SetOptions(merge: true));
 }
 
 Future<bool> checkUserExists() async {

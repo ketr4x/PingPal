@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 import '../handlers/database_handler.dart';
@@ -14,11 +14,20 @@ class ChooseUsernameScreen extends StatefulWidget {
 
 class _ChooseUsernameScreenState extends State<ChooseUsernameScreen> {
   final usernameController = TextEditingController();
+  final formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+
 
   @override
   void dispose() {
     usernameController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    usernameController.text = FirebaseAuth.instance.currentUser?.displayName?.replaceAll(' ', '') ?? '';
   }
 
   @override
@@ -30,62 +39,98 @@ class _ChooseUsernameScreenState extends State<ChooseUsernameScreen> {
         child: Center(
           child: Column(
             children: [
-              TextField(
-                controller: usernameController,
-                decoration: const InputDecoration(
-                  border: UnderlineInputBorder(),
-                  labelText: 'Enter your username',
+              Form(
+                key: formKey,
+                child: TextFormField(
+                  controller: usernameController,
+                  decoration: const InputDecoration(
+                    border: UnderlineInputBorder(),
+                    labelText: 'Enter your username',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Username cannot be empty';
+                    }
+                    if (value.trim().length < 3) {
+                      return 'Username must be at least 3 characters long';
+                    }
+                    if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value.trim())) {
+                      return "Only letters, numbers and underscores are allowed";
+                    }
+                    return null;
+                  },
                 ),
               ),
               const SizedBox(height: 8),
               ElevatedButton(
-                onPressed: () async {
-                  try {
-                    final uid = getUid();
+                onPressed: _isLoading
+                    ? null
+                    : () async {
+                        if (!formKey.currentState!.validate()) {
+                          return;
+                        }
 
-                    final matchingUsernameUser = await db
-                        .collection('Users')
-                        .where(
-                          'username_lower',
-                          isEqualTo: usernameController.text
-                              .trim()
-                              .toLowerCase(),
-                        )
-                        .get();
-                    if (matchingUsernameUser.docs.isNotEmpty) {
-                      final docId = matchingUsernameUser.docs.first.id;
-                      if (docId != uid) {
-                        printDebug('Username is already taken');
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Username is already taken'),
-                              duration: Duration(seconds: 3),
-                            ),
-                          );
-                        });
-                        throw Exception('Username is already taken');
-                      }
-                    }
+                        try {
+                          final uid = getUid();
+                          final username = usernameController.text.trim();
 
-                    await db.collection('Users').doc(uid).set({
-                      "username": usernameController.text.trim(),
-                      "username_lower": usernameController.text
-                          .trim()
-                          .toLowerCase(),
-                      "friends": [],
-                      "fcm_token": await FirebaseMessaging.instance.getToken(),
-                    });
+                          setState(() {
+                            _isLoading = true;
+                          });
 
-                    if (!context.mounted) {
-                      return;
-                    }
-                    enterApp(context, uid);
-                  } on FirebaseAuthException catch (e) {
-                    printDebug('Unable to sign in: $e');
-                  }
-                },
-                child: const Icon(Icons.send),
+                          final matchingUsernameUser = await db
+                              .collection('Users')
+                              .where(
+                                'username_lower',
+                                isEqualTo: username.toLowerCase(),
+                              )
+                              .get();
+
+                          if (matchingUsernameUser.docs.isNotEmpty) {
+                            final docId = matchingUsernameUser.docs.first.id;
+                            if (docId != uid) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Username is already taken'),
+                                  ),
+                                );
+                              }
+                              setState(() {
+                                _isLoading = false;
+                              });
+                              return;
+                            }
+                          }
+
+                          await db.collection('Users').doc(uid).set({
+                            "username": username,
+                            "username_lower": username
+                                .toLowerCase(),
+                            "friends": [],
+                            "fcm_token": await FirebaseMessaging.instance
+                                .getToken(),
+                          });
+
+                          if (!context.mounted) {
+                            return;
+                          }
+                          enterApp(context, uid);
+                        } catch (e) {
+                          printDebug('Unable to sign in: $e');
+                        } finally {
+                          setState(() {
+                            _isLoading = false;
+                          });
+                        }
+                      },
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(),
+                      )
+                    : const Icon(Icons.send),
               ),
             ],
           ),

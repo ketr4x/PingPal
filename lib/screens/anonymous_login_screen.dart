@@ -14,6 +14,8 @@ class AnonymousLoginScreen extends StatefulWidget {
 
 class _AnonymousLoginScreenState extends State<AnonymousLoginScreen> {
   final usernameController = TextEditingController();
+  final formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -24,93 +26,129 @@ class _AnonymousLoginScreenState extends State<AnonymousLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      appBar: AppBar(title: const Text('Log in as a guest')),
       body: Padding(
         padding: const EdgeInsets.all(12),
         child: Center(
           child: Column(
             children: [
-              TextField(
-                controller: usernameController,
-                decoration: const InputDecoration(
-                  border: UnderlineInputBorder(),
-                  labelText: 'Enter your username',
+              Form(
+                key: formKey,
+                child: TextFormField(
+                  controller: usernameController,
+                  decoration: const InputDecoration(
+                    border: UnderlineInputBorder(),
+                    labelText: 'Enter your username',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Username cannot be empty';
+                    }
+                    if (value.trim().length < 3) {
+                      return 'Username must be at least 3 characters long';
+                    }
+                    if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value.trim())) {
+                      return "Only letters, numbers and underscores are allowed";
+                    }
+                    return null;
+                  },
                 ),
               ),
               const SizedBox(height: 8),
               ElevatedButton(
-                onPressed: () async {
-                  try {
-                    final userCredential = await FirebaseAuth.instance
-                        .signInAnonymously();
-                    final uid = userCredential.user?.uid;
+                onPressed: _isLoading
+                    ? null
+                    : () async {
+                        if (!formKey.currentState!.validate()) {
+                          return;
+                        }
 
-                    printDebug('Signed in with temporary account $uid');
+                        try {
+                          final userCredential = await FirebaseAuth.instance
+                              .signInAnonymously();
+                          final uid = userCredential.user?.uid;
+                          final username = usernameController.text.trim();
 
-                    NotificationSettings permission = await FirebaseMessaging
-                        .instance
-                        .requestPermission();
-                    if (permission.authorizationStatus ==
-                        AuthorizationStatus.denied) {
-                      printDebug('Notifications disabled');
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Notifications disabled'),
-                            duration: Duration(seconds: 3),
-                          ),
-                        );
-                      });
-                    }
+                          setState(() {
+                            _isLoading = true;
+                          });
 
-                    final matchingUsernameUser = await db
-                        .collection('Users')
-                        .where(
-                          'username_lower',
-                          isEqualTo: usernameController.text
-                              .trim()
-                              .toLowerCase(),
-                        )
-                        .get();
-                    if (matchingUsernameUser.docs.isNotEmpty) {
-                      final docId = matchingUsernameUser.docs.first.id;
-                      if (docId != uid) {
-                        printDebug('Username is already taken');
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Username is already taken'),
-                              duration: Duration(seconds: 3),
-                            ),
-                          );
-                        });
-                        throw Exception('Username is already taken');
-                      }
-                    }
+                          printDebug('Signed in with temporary account $uid');
 
-                    if (!context.mounted) {
-                      return;
-                    }
+                          NotificationSettings permission =
+                              await FirebaseMessaging.instance
+                                  .requestPermission();
+                          if (permission.authorizationStatus ==
+                              AuthorizationStatus.denied) {
+                            printDebug('Notifications disabled');
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Notifications disabled'),
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                            });
+                          }
 
-                    await getNotificationsPermission(context);
-                    await db.collection('Users').doc(uid).set({
-                      "username": usernameController.text.trim(),
-                      "username_lower": usernameController.text
-                          .trim()
-                          .toLowerCase(),
-                      "friends": [],
-                      "fcm_token": await FirebaseMessaging.instance.getToken(),
-                    });
+                          final matchingUsernameUser = await db
+                              .collection('Users')
+                              .where(
+                                'username_lower',
+                                isEqualTo: username
+                                    .toLowerCase(),
+                              )
+                              .get();
+                          if (matchingUsernameUser.docs.isNotEmpty) {
+                            final docId = matchingUsernameUser.docs.first.id;
+                            if (docId != uid) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Username is already taken'),
+                                  ),
+                                );
+                              }
+                              setState(() {
+                                _isLoading = false;
+                              });
+                              return;
+                            }
+                          }
 
-                    if (!context.mounted) {
-                      return;
-                    }
-                    enterApp(context, uid!);
-                  } on FirebaseAuthException catch (e) {
-                    printDebug('Unable to sign in: $e');
-                  }
-                },
-                child: const Icon(Icons.send),
+                          if (!context.mounted) {
+                            return;
+                          }
+
+                          await getNotificationsPermission(context);
+                          await db.collection('Users').doc(uid).set({
+                            "username": username,
+                            "username_lower": username
+                                .toLowerCase(),
+                            "friends": [],
+                            "fcm_token": await FirebaseMessaging.instance
+                                .getToken(),
+                          });
+
+                          if (!context.mounted) {
+                            return;
+                          }
+                          enterApp(context, uid!);
+                        } catch (e) {
+                          printDebug('Unable to sign in: $e');
+                        } finally {
+                          setState(() {
+                            _isLoading = false;
+                          });
+                        }
+                      },
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(),
+                      )
+                    : const Icon(Icons.send),
               ),
             ],
           ),

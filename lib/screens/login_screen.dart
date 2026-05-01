@@ -20,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final user = FirebaseAuth.instance.currentUser;
   bool userLoggedIn = false;
   bool userComplete = false;
+  bool userChecked = false;
 
   Row buildLoginRow(String icon, double size) {
     return Row(
@@ -52,6 +53,9 @@ class _LoginScreenState extends State<LoginScreen> {
         });
       }
     }
+    setState(() {
+      userChecked = true;
+    });
   }
 
   @override
@@ -63,86 +67,89 @@ class _LoginScreenState extends State<LoginScreen> {
       return ChooseUsernameScreen();
     }
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Welcome!')),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [
-              Column(
-                children: [
-                  ElevatedButton(
-                    onPressed: () async {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AnonymousLoginScreen(),
+    return userChecked
+        ? Scaffold(
+            appBar: AppBar(title: const Text('Welcome!')),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () async {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AnonymousLoginScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text('Log in as a guest...'),
                         ),
-                      );
-                    },
-                    child: const Text('Log in as a guest...'),
-                  ),
-                  ElevatedButton(
-                    child: buildLoginRow('google', 30),
-                    onPressed: () async {
-                      await GoogleSignIn.instance.initialize(
-                        serverClientId:
-                            '526025104232-naf2pke6e52p3gvjp8s2imiiti8aqmid.apps.googleusercontent.com',
-                      );
-                      try {
-                        final googleUser = await GoogleSignIn.instance
-                            .authenticate();
-                        final googleAuth = googleUser.authentication;
-                        final credential = GoogleAuthProvider.credential(
-                          idToken: googleAuth.idToken,
-                        );
-                        final userCredential = await FirebaseAuth.instance
-                            .signInWithCredential(credential);
+                        ElevatedButton(
+                          child: buildLoginRow('google', 30),
+                          onPressed: () async {
+                            await GoogleSignIn.instance.initialize(
+                              serverClientId:
+                                  '526025104232-naf2pke6e52p3gvjp8s2imiiti8aqmid.apps.googleusercontent.com',
+                            );
+                            try {
+                              final googleUser = await GoogleSignIn.instance
+                                  .authenticate();
+                              final googleAuth = googleUser.authentication;
+                              final credential = GoogleAuthProvider.credential(
+                                idToken: googleAuth.idToken,
+                              );
+                              final userCredential = await FirebaseAuth.instance
+                                  .signInWithCredential(credential);
 
-                        final user = userCredential.user;
-                        if (user == null) {
-                          printDebug('Unable to sign in: uid is null');
-                          return;
-                        }
+                              final user = userCredential.user;
+                              if (user == null) {
+                                printDebug('Unable to sign in: uid is null');
+                                return;
+                              }
 
-                        final userDoc = await db
-                            .collection('Users')
-                            .doc(user.uid)
-                            .get();
-                        if (userDoc.exists) {
-                          if (!context.mounted) {
-                            return;
-                          }
-                          await getNotificationsPermission(context);
-                          await updateFcmToken();
+                              final userDoc = await db
+                                  .collection('Users')
+                                  .doc(user.uid)
+                                  .get();
+                              if (userDoc.exists) {
+                                if (!context.mounted) {
+                                  return;
+                                }
+                                await getNotificationsPermission(context);
+                                await updateFcmToken();
 
-                          if (!context.mounted) {
-                            return;
-                          }
-                          enterApp(context, user.uid);
-                        } else {
-                          if (!context.mounted) {
-                            return;
-                          }
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ChooseUsernameScreen(),
-                            ),
-                          );
-                        }
-                      } on GoogleSignInException catch (e) {
-                        printDebug('Unable to sign in: $e');
-                      }
-                    },
-                  ),
-                ],
+                                if (!context.mounted) {
+                                  return;
+                                }
+                                enterApp(context, user.uid);
+                              } else {
+                                if (!context.mounted) {
+                                  return;
+                                }
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ChooseUsernameScreen(),
+                                  ),
+                                );
+                              }
+                            } on GoogleSignInException catch (e) {
+                              printDebug('Unable to sign in: $e');
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
+            ),
+          )
+        : Scaffold(body: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator())));
   }
 }
