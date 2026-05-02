@@ -30,8 +30,12 @@ Copyright ketr4x, 2026. Licensed under Apache-2.0 license.
 
 ## Privacy Policy
 PingPal stores basic account information, usernames, friend relationships, pings, notification tokens and optionally location data when you choose to send it.
+
 Location is only collected when you send a ping with location enabled.
+
 Firebase Authentication is used for login. Cloud Firestore stores app data. Cloud Messaging is used for notifications.
+PingPal uses Firebase Crashlytics and Performance to help detect issues.
+
 To request data deletion, contact mail@ketrax.ovh
 
 ## AI disclaimer
