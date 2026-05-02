@@ -27,5 +27,12 @@ def on_ping(event: firestore_fn.Event[firestore_fn.DocumentSnapshot]) -> None:
         ),
         token=fcm_token
     )
-    response = messaging.send(message)
-    print(response)
+
+    try:
+        messaging.send(message)
+    except Exception:
+        firestore.client().collection("Users").document(receiver).update({
+            "fcm_token": firestore.DELETE_FIELD
+        })
+
+    print(f"Notification send for {receiver}")

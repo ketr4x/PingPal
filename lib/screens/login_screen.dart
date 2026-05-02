@@ -41,16 +41,12 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleExistingUser() async {
     final userExists = await checkUserExists();
     if (userExists) {
-      setState(() {
-        userLoggedIn = true;
-      });
+      userLoggedIn = true;
       await updateFcmToken();
 
       final userProfileComplete = await checkUserComplete();
       if (userProfileComplete) {
-        setState(() {
-          userComplete = true;
-        });
+        userComplete = true;
       }
     }
     setState(() {
