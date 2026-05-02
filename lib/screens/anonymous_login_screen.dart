@@ -26,7 +26,7 @@ class _AnonymousLoginScreenState extends State<AnonymousLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Log in as a guest')),
+      appBar: AppBar(title: const Text('Sign in as a guest')),
       body: Padding(
         padding: const EdgeInsets.all(12),
         child: Center(
@@ -95,8 +95,7 @@ class _AnonymousLoginScreenState extends State<AnonymousLoginScreen> {
                               .collection('Users')
                               .where(
                                 'username_lower',
-                                isEqualTo: username
-                                    .toLowerCase(),
+                                isEqualTo: username.toLowerCase(),
                               )
                               .get();
                           if (matchingUsernameUser.docs.isNotEmpty) {
@@ -123,8 +122,7 @@ class _AnonymousLoginScreenState extends State<AnonymousLoginScreen> {
                           await getNotificationsPermission(context);
                           await db.collection('Users').doc(uid).set({
                             "username": username,
-                            "username_lower": username
-                                .toLowerCase(),
+                            "username_lower": username.toLowerCase(),
                             "friends": [],
                             "fcm_token": await FirebaseMessaging.instance
                                 .getToken(),

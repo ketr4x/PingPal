@@ -70,6 +70,11 @@ Future<void> getNotificationsPermission(BuildContext context) async {
   }
 }
 
+void startListening(BuildContext context) {
+  final uid = getUid();
+  Provider.of<PingProvider>(context, listen: false).startListening(uid);
+}
+
 void enterApp(BuildContext context, String uid) {
   if (context.mounted) {
     Provider.of<PingProvider>(context, listen: false).startListening(uid);

@@ -17,7 +17,6 @@ class _ChooseUsernameScreenState extends State<ChooseUsernameScreen> {
   final formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
-
   @override
   void dispose() {
     usernameController.dispose();
@@ -27,7 +26,9 @@ class _ChooseUsernameScreenState extends State<ChooseUsernameScreen> {
   @override
   void initState() {
     super.initState();
-    usernameController.text = FirebaseAuth.instance.currentUser?.displayName?.replaceAll(' ', '') ?? '';
+    usernameController.text =
+        FirebaseAuth.instance.currentUser?.displayName?.replaceAll(' ', '') ??
+        '';
   }
 
   @override
@@ -105,8 +106,7 @@ class _ChooseUsernameScreenState extends State<ChooseUsernameScreen> {
 
                           await db.collection('Users').doc(uid).set({
                             "username": username,
-                            "username_lower": username
-                                .toLowerCase(),
+                            "username_lower": username.toLowerCase(),
                             "friends": [],
                             "fcm_token": await FirebaseMessaging.instance
                                 .getToken(),

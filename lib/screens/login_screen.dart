@@ -26,8 +26,8 @@ class _LoginScreenState extends State<LoginScreen> {
     return Row(
       children: [
         SvgPicture.asset('assets/logos/$icon.svg', height: size, width: size),
-        Spacer(),
-        Text('Sign in with Google'),
+        SizedBox(width: 14),
+        Text('Sign in ${icon == "google" ? 'with Google' : 'as a guest'}'),
       ],
     );
   }
@@ -61,6 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     if (userLoggedIn && userComplete) {
+      startListening(context);
       return PagerScreen();
     }
     if (userLoggedIn) {
@@ -72,84 +73,95 @@ class _LoginScreenState extends State<LoginScreen> {
             appBar: AppBar(title: const Text('Welcome!')),
             body: Center(
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
                 child: Column(
+                  spacing: 12,
+                  crossAxisAlignment: .stretch,
                   children: [
-                    Column(
-                      children: [
-                        ElevatedButton(
-                          onPressed: () async {
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(0, 50),
+                      ),
+                      onPressed: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AnonymousLoginScreen(),
+                          ),
+                        );
+                      },
+                      child: buildLoginRow('guest', 30),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(0, 50),
+                      ),
+                      child: buildLoginRow('google', 30),
+                      onPressed: () async {
+                        await GoogleSignIn.instance.initialize(
+                          serverClientId:
+                              '526025104232-naf2pke6e52p3gvjp8s2imiiti8aqmid.apps.googleusercontent.com',
+                        );
+                        try {
+                          final googleUser = await GoogleSignIn.instance
+                              .authenticate();
+                          final googleAuth = googleUser.authentication;
+                          final credential = GoogleAuthProvider.credential(
+                            idToken: googleAuth.idToken,
+                          );
+                          final userCredential = await FirebaseAuth.instance
+                              .signInWithCredential(credential);
+
+                          final user = userCredential.user;
+                          if (user == null) {
+                            printDebug('Unable to sign in: uid is null');
+                            return;
+                          }
+
+                          final userDoc = await db
+                              .collection('Users')
+                              .doc(user.uid)
+                              .get();
+                          if (userDoc.exists) {
+                            if (!context.mounted) {
+                              return;
+                            }
+                            await getNotificationsPermission(context);
+                            await updateFcmToken();
+
+                            if (!context.mounted) {
+                              return;
+                            }
+                            enterApp(context, user.uid);
+                          } else {
+                            if (!context.mounted) {
+                              return;
+                            }
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => AnonymousLoginScreen(),
+                                builder: (context) => ChooseUsernameScreen(),
                               ),
                             );
-                          },
-                          child: const Text('Log in as a guest...'),
-                        ),
-                        ElevatedButton(
-                          child: buildLoginRow('google', 30),
-                          onPressed: () async {
-                            await GoogleSignIn.instance.initialize(
-                              serverClientId:
-                                  '526025104232-naf2pke6e52p3gvjp8s2imiiti8aqmid.apps.googleusercontent.com',
-                            );
-                            try {
-                              final googleUser = await GoogleSignIn.instance
-                                  .authenticate();
-                              final googleAuth = googleUser.authentication;
-                              final credential = GoogleAuthProvider.credential(
-                                idToken: googleAuth.idToken,
-                              );
-                              final userCredential = await FirebaseAuth.instance
-                                  .signInWithCredential(credential);
-
-                              final user = userCredential.user;
-                              if (user == null) {
-                                printDebug('Unable to sign in: uid is null');
-                                return;
-                              }
-
-                              final userDoc = await db
-                                  .collection('Users')
-                                  .doc(user.uid)
-                                  .get();
-                              if (userDoc.exists) {
-                                if (!context.mounted) {
-                                  return;
-                                }
-                                await getNotificationsPermission(context);
-                                await updateFcmToken();
-
-                                if (!context.mounted) {
-                                  return;
-                                }
-                                enterApp(context, user.uid);
-                              } else {
-                                if (!context.mounted) {
-                                  return;
-                                }
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        ChooseUsernameScreen(),
-                                  ),
-                                );
-                              }
-                            } on GoogleSignInException catch (e) {
-                              printDebug('Unable to sign in: $e');
-                            }
-                          },
-                        ),
-                      ],
+                          }
+                        } on GoogleSignInException catch (e) {
+                          printDebug('Unable to sign in: $e');
+                        }
+                      },
                     ),
                   ],
                 ),
               ),
             ),
           )
-        : Scaffold(body: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator())));
+        : Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(),
+              ),
+            ),
+          );
   }
 }
