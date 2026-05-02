@@ -40,6 +40,7 @@ jobs:
             );
           }
           EOF
+          dart format lib/firebase_options.dart
 
       - name: Check formatting
         run: dart format --set-exit-if-changed .
