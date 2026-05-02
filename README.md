@@ -1,6 +1,7 @@
 # PingPal
 
 ![Hackatime Badge](https://hackatime.hackclub.com/api/v1/badge/U08RQEP53HA/ketr4x/PingPal)
+![Lines of code](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ketr4x/4084d1e46e1928fbf2accfd331235a27/raw/pingpal-loc.json)
 
 An app to ping and find your friends.
 
@@ -20,7 +21,7 @@ An app to ping and find your friends.
 - More login options
 - Settings
 - Notification overhaul (support map pings and add a button where applicable)
-- BugfixesIt's 
+- Bugfixes
 - User profile customization
 - Migrating a guest account to a real one
 - Data deletion

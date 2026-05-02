@@ -1,0 +1,30 @@
+name: Generate Lines of Code Badge
+
+on:
+  push:
+    branches: [ "main", "master" ]
+
+jobs:
+  cloc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Count Lines of Code
+        id: loc
+        run: |
+          sudo apt-get install cloc
+          TOTAL=$(cloc lib/ functions/ | grep SUM: | awk '{print $5}')
+          echo "Counted $TOTAL lines of code"
+          echo "lines=$TOTAL" >> $GITHUB_OUTPUT
+
+      - name: Update Gist Badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: 4084d1e46e1928fbf2accfd331235a27
+          filename: pingpal-loc.json
+          label: Lines of Code
+          message: ${{ steps.loc.outputs.lines }}
+          color: blue
