@@ -27,6 +27,20 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Create mock Firebase Options
+        run: |
+          cat <<EOF > lib/firebase_options.dart
+          import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
+          class DefaultFirebaseOptions {
+            static const FirebaseOptions currentPlatform = FirebaseOptions(
+              apiKey: 'mock-key',
+              appId: 'mock-app-id',
+              messagingSenderId: 'mock-sender-id',
+              projectId: 'mock-project-id',
+            );
+          }
+          EOF
+
       - name: Check formatting
         run: dart format --set-exit-if-changed .
 
