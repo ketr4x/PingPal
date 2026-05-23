@@ -43,6 +43,25 @@ class _PagerScreenState extends State<PagerScreen> {
               const SizedBox(height: 8),
               ElevatedButton(
                 onPressed: () async {
+                  final receiver = await db
+                      .collection('Users')
+                      .where(
+                        'username',
+                        isEqualTo: usernameController.text.trim(),
+                      )
+                      .get();
+                  if (receiver.docs.isEmpty) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Receiver does not exist'),
+                          duration: Duration(seconds: 3),
+                        ),
+                      );
+                    }
+                    printDebug('Receiver does not exist');
+                    return;
+                  }
                   final receiverUid = await getUidByUsername(
                     usernameController.text.trim(),
                   );

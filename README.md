@@ -28,7 +28,6 @@ An app to ping and find your friends.
 - Migrating a guest account to a real one
 - Data deletion
 - UI/UX overhaul
-- Ping sending validation in Pager
 
 ## License
 Copyright ketr4x, 2026. Licensed under Apache-2.0 license.

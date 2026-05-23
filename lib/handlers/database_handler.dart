@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 
+import '../globals.dart';
 import 'location_service.dart';
 import '../helpers.dart';
 
@@ -15,6 +17,18 @@ Future<void> sendPing(String receiverUid, bool useLocation) async {
 
     if (receiverUid.isEmpty) {
       printDebug('Receiver username is empty');
+      return;
+    }
+
+    final receiver = await db.collection('Users').doc(receiverUid).get();
+    if (!receiver.exists) {
+      rootScaffoldMessengerKey.currentState?.showSnackBar(
+        SnackBar(
+          content: Text('Receiver does not exist'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      printDebug('Receiver does not exist');
       return;
     }
 
@@ -41,6 +55,11 @@ Future<void> sendPing(String receiverUid, bool useLocation) async {
       if (useLocation) 'latitude': latitude,
       if (useLocation) 'longitude': longitude,
     });
+
+    printDebug('Sent a ping to $receiverUid');
+    rootScaffoldMessengerKey.currentState?.showSnackBar(
+      SnackBar(content: Text('Sent a ping!'), duration: Duration(seconds: 3)),
+    );
   } catch (e) {
     printDebug('Unable to send the ping');
   }
