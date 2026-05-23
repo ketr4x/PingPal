@@ -171,13 +171,33 @@ class _PagerScreenState extends State<PagerScreen> {
                                 final ping = docs[index];
                                 final doc = ping.data();
                                 final senderUid = doc['sender'] as String;
-                                final timestamp =
-                                    doc['timestamp'] as Timestamp?;
-                                final time = timestamp != null
-                                    ? TimeOfDay.fromDateTime(
-                                        timestamp.toDate(),
-                                      ).format(context)
-                                    : 'Unknown';
+
+                                final timestamp = doc['timestamp'] as Timestamp?;
+                                final sentAt = timestamp?.toDate().toLocal();
+                                final now = DateTime.now();
+
+                                final String time;
+                                if (sentAt == null) {
+                                  time = 'Unknown';
+                                } else {
+                                  final hh = sentAt.hour.toString().padLeft(2, '0');
+                                  final mm = sentAt.minute.toString().padLeft(2, '0');
+                                  final month = sentAt.month.toString().padLeft(2, '0');
+                                  final day = sentAt.day.toString().padLeft(2, '0');
+
+                                  final isToday =
+                                      sentAt.year == now.year &&
+                                          sentAt.month == now.month &&
+                                          sentAt.day == now.day;
+
+                                  if (isToday) {
+                                    time = '$hh:$mm';
+                                  } else if (sentAt.year == now.year) {
+                                    time = '$month/$day $hh:$mm';
+                                  } else {
+                                    time = '${sentAt.year}/$month/$day $hh:$mm';
+                                  }
+                                }
 
                                 return ListTile(
                                   title: FutureBuilder(
@@ -189,7 +209,15 @@ class _PagerScreenState extends State<PagerScreen> {
                                       return Text(usernameSnapshot.data!);
                                     },
                                   ),
-                                  trailing: Text(time),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (doc.containsKey('latitude') && doc.containsKey('longitude'))
+                                        const Icon(Icons.location_pin),
+                                      const SizedBox(width: 8),
+                                      Text(time)
+                                    ],
+                                  ),
                                 );
                               },
                             ),
