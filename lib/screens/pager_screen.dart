@@ -19,6 +19,11 @@ class _PagerScreenState extends State<PagerScreen> {
   String? uid;
   Map<String, dynamic>? userData;
 
+  final Map<String, Future<String>> _usernameFutureCache = {};
+  Future<String> _getUsernameFuture(String uid) {
+    return _usernameFutureCache.putIfAbsent(uid, () => getUsernameByUid(uid));
+  }
+
   late Stream<QuerySnapshot<Map<String, dynamic>>> pingsStream = Stream.empty();
 
   @override
@@ -65,6 +70,7 @@ class _PagerScreenState extends State<PagerScreen> {
               ),
               const SizedBox(height: 8),
               Row(
+                mainAxisAlignment: .center,
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -131,7 +137,7 @@ class _PagerScreenState extends State<PagerScreen> {
                 ],
               ),
 
-              SingleChildScrollView(
+              Expanded(
                 child: Card(
                   child: StreamBuilder(
                     stream: pingsStream,
@@ -151,34 +157,42 @@ class _PagerScreenState extends State<PagerScreen> {
                         );
                       }
 
+                      final docs = snapshot.data!.docs.toList();
                       return Column(
                         children: [
-                          Text('Last pings:'),
-                          ListView(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            children: snapshot.data!.docs.map((ping) {
-                              final doc = ping.data();
-                              final senderUid = doc['sender'] as String;
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text('Last pings:'),
+                          ),
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: docs.length,
+                              itemBuilder: (context, index) {
+                                final ping = docs[index];
+                                final doc = ping.data();
+                                final senderUid = doc['sender'] as String;
+                                final timestamp =
+                                    doc['timestamp'] as Timestamp?;
+                                final time = timestamp != null
+                                    ? TimeOfDay.fromDateTime(
+                                        timestamp.toDate(),
+                                      ).format(context)
+                                    : 'Unknown';
 
-                              final timestamp = doc['timestamp'] as Timestamp;
-                              final time = TimeOfDay.fromDateTime(
-                                timestamp.toDate(),
-                              ).format(context);
-
-                              return ListTile(
-                                title: FutureBuilder(
-                                  future: getUsernameByUid(senderUid),
-                                  builder: (context, usernameSnapshot) {
-                                    if (!usernameSnapshot.hasData) {
-                                      return Text('Loading...');
-                                    }
-                                    return Text(usernameSnapshot.data!);
-                                  },
-                                ),
-                                trailing: Text(time),
-                              );
-                            }).toList(),
+                                return ListTile(
+                                  title: FutureBuilder(
+                                    future: _getUsernameFuture(senderUid),
+                                    builder: (context, usernameSnapshot) {
+                                      if (!usernameSnapshot.hasData) {
+                                        return const Text('Loading...');
+                                      }
+                                      return Text(usernameSnapshot.data!);
+                                    },
+                                  ),
+                                  trailing: Text(time),
+                                );
+                              },
+                            ),
                           ),
                         ],
                       );
