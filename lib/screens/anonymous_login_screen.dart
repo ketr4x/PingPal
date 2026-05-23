@@ -75,22 +75,6 @@ class _AnonymousLoginScreenState extends State<AnonymousLoginScreen> {
 
                           printDebug('Signed in with temporary account $uid');
 
-                          NotificationSettings permission =
-                              await FirebaseMessaging.instance
-                                  .requestPermission();
-                          if (permission.authorizationStatus ==
-                              AuthorizationStatus.denied) {
-                            printDebug('Notifications disabled');
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Notifications disabled'),
-                                  duration: Duration(seconds: 3),
-                                ),
-                              );
-                            });
-                          }
-
                           final matchingUsernameUser = await db
                               .collection('Users')
                               .where(
