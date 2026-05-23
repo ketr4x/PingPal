@@ -5,6 +5,8 @@
 
 An app to ping and find your friends.
 
+[Demo video](https://drive.google.com/file/d/1LzgfOVL0ghFFbfXMrVoeKeSfJ7S6lSrM/view)
+
 ## Features
 - Pinging your friends
 - Background notifications
@@ -26,6 +28,7 @@ An app to ping and find your friends.
 - Migrating a guest account to a real one
 - Data deletion
 - UI/UX overhaul
+- Ping sending validation in Pager
 
 ## License
 Copyright ketr4x, 2026. Licensed under Apache-2.0 license.
