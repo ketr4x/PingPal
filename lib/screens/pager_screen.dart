@@ -46,7 +46,7 @@ class _PagerScreenState extends State<PagerScreen> {
       uid = currentUid;
       pingsStream = db
           .collection('Pings')
-          .where('receiver', isEqualTo: currentUid)
+          .where('sender', isEqualTo: currentUid)
           .orderBy('timestamp', descending: true)
           .snapshots();
     });
@@ -153,7 +153,7 @@ class _PagerScreenState extends State<PagerScreen> {
                       if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                         return Padding(
                           padding: const EdgeInsets.all(16.0),
-                          child: const Text("You haven't received any pings!"),
+                          child: const Text("You haven't sent any pings!"),
                         );
                       }
 
@@ -162,7 +162,7 @@ class _PagerScreenState extends State<PagerScreen> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: Text('Last pings:'),
+                            child: Text('Last sent pings:'),
                           ),
                           Expanded(
                             child: ListView.builder(
@@ -170,9 +170,10 @@ class _PagerScreenState extends State<PagerScreen> {
                               itemBuilder: (context, index) {
                                 final ping = docs[index];
                                 final doc = ping.data();
-                                final senderUid = doc['sender'] as String;
+                                final receiverUid = doc['receiver'] as String;
 
-                                final timestamp = doc['timestamp'] as Timestamp?;
+                                final timestamp =
+                                    doc['timestamp'] as Timestamp?;
                                 final sentAt = timestamp?.toDate().toLocal();
                                 final now = DateTime.now();
 
@@ -180,15 +181,27 @@ class _PagerScreenState extends State<PagerScreen> {
                                 if (sentAt == null) {
                                   time = 'Unknown';
                                 } else {
-                                  final hh = sentAt.hour.toString().padLeft(2, '0');
-                                  final mm = sentAt.minute.toString().padLeft(2, '0');
-                                  final month = sentAt.month.toString().padLeft(2, '0');
-                                  final day = sentAt.day.toString().padLeft(2, '0');
+                                  final hh = sentAt.hour.toString().padLeft(
+                                    2,
+                                    '0',
+                                  );
+                                  final mm = sentAt.minute.toString().padLeft(
+                                    2,
+                                    '0',
+                                  );
+                                  final month = sentAt.month.toString().padLeft(
+                                    2,
+                                    '0',
+                                  );
+                                  final day = sentAt.day.toString().padLeft(
+                                    2,
+                                    '0',
+                                  );
 
                                   final isToday =
                                       sentAt.year == now.year &&
-                                          sentAt.month == now.month &&
-                                          sentAt.day == now.day;
+                                      sentAt.month == now.month &&
+                                      sentAt.day == now.day;
 
                                   if (isToday) {
                                     time = '$hh:$mm';
@@ -201,7 +214,7 @@ class _PagerScreenState extends State<PagerScreen> {
 
                                 return ListTile(
                                   title: FutureBuilder(
-                                    future: _getUsernameFuture(senderUid),
+                                    future: _getUsernameFuture(receiverUid),
                                     builder: (context, usernameSnapshot) {
                                       if (!usernameSnapshot.hasData) {
                                         return const Text('Loading...');
@@ -212,10 +225,11 @@ class _PagerScreenState extends State<PagerScreen> {
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      if (doc.containsKey('latitude') && doc.containsKey('longitude'))
+                                      if (doc.containsKey('latitude') &&
+                                          doc.containsKey('longitude'))
                                         const Icon(Icons.location_pin),
                                       const SizedBox(width: 8),
-                                      Text(time)
+                                      Text(time),
                                     ],
                                   ),
                                 );
