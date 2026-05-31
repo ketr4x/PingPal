@@ -8,6 +8,7 @@ import 'providers/ping_provider.dart';
 import 'screens/map_screen.dart';
 import 'screens/pager_screen.dart';
 import 'screens/friends_screen.dart';
+import 'screens/profile_screen.dart';
 
 void printDebug(String text) {
   if (kDebugMode) {
@@ -24,8 +25,16 @@ BottomNavigationBar bottomNavBar(BuildContext context, int currentIndex) {
       ),
       BottomNavigationBarItem(icon: Icon(Icons.contacts), label: 'Friends'),
       BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.account_circle),
+        label: 'Profile',
+      ),
     ],
     currentIndex: currentIndex,
+    selectedItemColor: Theme.of(context).colorScheme.primary,
+    unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
+    showUnselectedLabels: true,
+    type: BottomNavigationBarType.fixed,
     onTap: (index) {
       Widget page;
       switch (index) {
@@ -37,6 +46,9 @@ BottomNavigationBar bottomNavBar(BuildContext context, int currentIndex) {
           break;
         case 2:
           page = MapScreen();
+          break;
+        case 3:
+          page = ProfileScreen();
           break;
         default:
           return;
