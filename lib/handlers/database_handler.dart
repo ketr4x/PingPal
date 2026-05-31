@@ -9,6 +9,23 @@ import '../helpers.dart';
 
 FirebaseFirestore db = FirebaseFirestore.instance;
 
+Future<void> createAccount(String? uid, String username) async {
+  try {
+    await db.collection('Users').doc(uid).set({
+      "username": username,
+      "username_lower": username.toLowerCase(),
+      "friends": [],
+      "fcm_token": await FirebaseMessaging.instance
+          .getToken(),
+      'account_created': FieldValue.serverTimestamp(),
+    });
+
+    printDebug('Created account with uid $uid');
+  } catch (e) {
+    printDebug('Unable to create account');
+  }
+}
+
 Future<void> sendPing(String receiverUid, bool useLocation) async {
   try {
     final senderUid = getUid();

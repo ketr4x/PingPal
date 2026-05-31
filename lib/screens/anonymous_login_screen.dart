@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 
 import '../handlers/database_handler.dart';
 import '../helpers.dart';
@@ -104,13 +103,7 @@ class _AnonymousLoginScreenState extends State<AnonymousLoginScreen> {
                           }
 
                           await getNotificationsPermission(context);
-                          await db.collection('Users').doc(uid).set({
-                            "username": username,
-                            "username_lower": username.toLowerCase(),
-                            "friends": [],
-                            "fcm_token": await FirebaseMessaging.instance
-                                .getToken(),
-                          });
+                          await createAccount(uid, username);
 
                           if (!context.mounted) {
                             return;
