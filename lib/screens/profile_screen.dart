@@ -99,23 +99,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
           title: const Text('Profile'),
           actions: [
             IconButton(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProfileEditScreen(),
-                  ),
-                ),
-                icon: Icon(Icons.edit)
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProfileEditScreen()),
+              ),
+              icon: Icon(Icons.edit),
             ),
             IconButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => SettingsScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => SettingsScreen()),
               ),
-              icon: Icon(Icons.settings)
-            )
+              icon: Icon(Icons.settings),
+            ),
           ],
         ),
         body: Padding(

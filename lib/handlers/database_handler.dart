@@ -27,8 +27,14 @@ Future<void> createAccount(String? uid, String username) async {
 
 Future<void> deleteAccount(String uid) async {
   try {
-    final sentPings = await db.collection('Pings').where("sender", isEqualTo: uid).get();
-    final receivedPings = await db.collection('Pings').where("receiver", isEqualTo: uid).get();
+    final sentPings = await db
+        .collection('Pings')
+        .where("sender", isEqualTo: uid)
+        .get();
+    final receivedPings = await db
+        .collection('Pings')
+        .where("receiver", isEqualTo: uid)
+        .get();
     final deletedPingIds = <String>{};
 
     for (var doc in sentPings.docs) {

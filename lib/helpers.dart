@@ -107,7 +107,7 @@ Future<void> signOut(BuildContext context) async {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => LoginScreen()),
-            (Route<dynamic> route) => false,
+        (Route<dynamic> route) => false,
       );
     }
   } catch (e) {
