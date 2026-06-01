@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import 'profile_edit_screen.dart';
+import 'settings_screen.dart';
 import '../handlers/database_handler.dart';
 import '../helpers.dart';
 
@@ -93,7 +95,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        appBar: AppBar(title: const Text('Profile')),
+        appBar: AppBar(
+          title: const Text('Profile'),
+          actions: [
+            IconButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfileEditScreen(),
+                  ),
+                ),
+                icon: Icon(Icons.edit)
+            ),
+            IconButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SettingsScreen(),
+                ),
+              ),
+              icon: Icon(Icons.settings)
+            )
+          ],
+        ),
         body: Padding(
           padding: const EdgeInsets.all(12),
           child: Center(

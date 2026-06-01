@@ -25,6 +25,33 @@ Future<void> createAccount(String? uid, String username) async {
   }
 }
 
+Future<void> deleteAccount(String uid) async {
+  try {
+    final sentPings = await db.collection('Pings').where("sender", isEqualTo: uid).get();
+    final receivedPings = await db.collection('Pings').where("receiver", isEqualTo: uid).get();
+    final deletedPingIds = <String>{};
+
+    for (var doc in sentPings.docs) {
+      if (!deletedPingIds.contains(doc.id)) {
+        await doc.reference.delete();
+        deletedPingIds.add(doc.id);
+      }
+    }
+    for (var doc in receivedPings.docs) {
+      if (!deletedPingIds.contains(doc.id)) {
+        await doc.reference.delete();
+        deletedPingIds.add(doc.id);
+      }
+    }
+
+    await db.collection('Users').doc(uid).delete();
+    await FirebaseAuth.instance.currentUser?.delete();
+    printDebug('Deleted account with uid $uid');
+  } catch (e) {
+    printDebug('Unable to delete account');
+  }
+}
+
 Future<void> sendPing(String receiverUid, bool useLocation) async {
   try {
     final senderUid = getUid();

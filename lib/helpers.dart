@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'screens/login_screen.dart';
 import 'providers/ping_provider.dart';
 import 'screens/map_screen.dart';
 import 'screens/pager_screen.dart';
@@ -95,5 +96,21 @@ void enterApp(BuildContext context, String uid) {
       MaterialPageRoute(builder: (context) => PagerScreen()),
       (Route<dynamic> route) => false,
     );
+  }
+}
+
+Future<void> signOut(BuildContext context) async {
+  try {
+    await FirebaseAuth.instance.signOut();
+    if (context.mounted) {
+      Provider.of<PingProvider>(context, listen: false).stopListening();
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+            (Route<dynamic> route) => false,
+      );
+    }
+  } catch (e) {
+    printDebug('Cannot sign out: $e');
   }
 }
