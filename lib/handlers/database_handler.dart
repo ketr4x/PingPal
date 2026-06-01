@@ -15,8 +15,7 @@ Future<void> createAccount(String? uid, String username) async {
       "username": username,
       "username_lower": username.toLowerCase(),
       "friends": [],
-      "fcm_token": await FirebaseMessaging.instance
-          .getToken(),
+      "fcm_token": await FirebaseMessaging.instance.getToken(),
       'account_created': FieldValue.serverTimestamp(),
     });
 
