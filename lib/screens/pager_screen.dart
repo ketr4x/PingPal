@@ -137,7 +137,7 @@ class _PagerScreenState extends State<PagerScreen> {
                 ],
               ),
 
-              Expanded(
+              Flexible(
                 child: Card(
                   child: StreamBuilder(
                     stream: pingsStream,
