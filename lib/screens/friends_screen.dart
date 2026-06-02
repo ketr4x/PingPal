@@ -108,6 +108,10 @@ class _FriendsScreenState extends State<FriendsScreen> {
                                           sendPing(friendUid, true),
                                       icon: Icon(Icons.location_pin),
                                     ),
+                                    IconButton(
+                                      onPressed: () => deleteFriend(friendUid),
+                                      icon: Icon(Icons.remove_circle),
+                                    ),
                                   ],
                                 ),
                               ),

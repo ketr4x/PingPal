@@ -84,13 +84,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final currentUid = getUid();
     if (!mounted) return;
 
-    final sentPings = db.collection('Pings').where('sender', isEqualTo: currentUid);
+    final sentPings = db
+        .collection('Pings')
+        .where('sender', isEqualTo: currentUid);
     final sentPingsCount = await sentPings.count().get();
 
-    final receivedPings = db.collection('Pings').where('receiver', isEqualTo: currentUid);
+    final receivedPings = db
+        .collection('Pings')
+        .where('receiver', isEqualTo: currentUid);
     final receivedPingsCount = await receivedPings.count().get();
 
-    final followers = db.collection('Users').where('friends', arrayContains: currentUid);
+    final followers = db
+        .collection('Users')
+        .where('friends', arrayContains: currentUid);
     final currentFollowersCount = await followers.count().get();
 
     final following = await db.collection('Users').doc(uid).get();
@@ -186,19 +192,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 children: [
                                   ListTile(
                                     title: Text('Pings sent'),
-                                    trailing: Text(sentCount.toString(), style: TextStyle(fontSize: 16)),
+                                    trailing: Text(
+                                      sentCount.toString(),
+                                      style: TextStyle(fontSize: 16),
+                                    ),
                                   ),
                                   ListTile(
                                     title: Text('Pings received'),
-                                    trailing: Text(receivedCount.toString(), style: TextStyle(fontSize: 16)),
+                                    trailing: Text(
+                                      receivedCount.toString(),
+                                      style: TextStyle(fontSize: 16),
+                                    ),
                                   ),
                                   ListTile(
                                     title: Text('Friends'),
-                                    trailing: Text(followingCount.toString(), style: TextStyle(fontSize: 16)),
+                                    trailing: Text(
+                                      followingCount.toString(),
+                                      style: TextStyle(fontSize: 16),
+                                    ),
                                   ),
                                   ListTile(
                                     title: Text('Followers'),
-                                    trailing: Text(followersCount.toString(), style: TextStyle(fontSize: 16)),
+                                    trailing: Text(
+                                      followersCount.toString(),
+                                      style: TextStyle(fontSize: 16),
+                                    ),
                                   ),
                                 ],
                               ),

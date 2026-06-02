@@ -160,3 +160,17 @@ Future<bool> checkUserComplete() async {
   }
   return false;
 }
+
+Future<void> deleteFriend(String friendUid) async {
+  try {
+    final uid = getUid();
+
+    await db.collection('Users').doc(uid).update({
+      "friends": FieldValue.arrayRemove([friendUid]),
+    });
+
+    printDebug('Removed friend $friendUid from $uid');
+  } catch (e) {
+    printDebug('Unable to remove friend');
+  }
+}
