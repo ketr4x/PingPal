@@ -1,3 +1,4 @@
+import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -22,21 +23,31 @@ Future<void> main() async {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     return true;
   };
-  runApp(const PingPal());
+
+  final savedThemeMode = await AdaptiveTheme.getThemeMode();
+
+  runApp(PingPal(savedThemeMode: savedThemeMode));
 }
 
 class PingPal extends StatelessWidget {
-  const PingPal({super.key});
+  final AdaptiveThemeMode? savedThemeMode;
+  const PingPal({super.key, this.savedThemeMode});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => PingProvider(),
-      child: MaterialApp(
-        title: 'PingPal',
-        theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.blue)),
-        home: LoginScreen(),
-        scaffoldMessengerKey: rootScaffoldMessengerKey,
+      child: AdaptiveTheme(
+        light: .light(useMaterial3: true),
+        dark: .dark(useMaterial3: true),
+        initial: savedThemeMode ?? AdaptiveThemeMode.system,
+        builder: (theme, darkTheme) => MaterialApp(
+          title: 'PingPal',
+          theme: theme,
+          darkTheme: darkTheme,
+          home: LoginScreen(),
+          scaffoldMessengerKey: rootScaffoldMessengerKey,
+        ),
       ),
     );
   }
