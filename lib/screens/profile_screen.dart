@@ -19,7 +19,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? uid;
   String username = "Unknown";
   String accountCreated = "Unknown";
-  bool initComplete = false;
+  int sentCount = 0;
+  int receivedCount = 0;
+  int followersCount = 0;
+  int followingCount = 0;
 
   final Map<String, Future<String>> _usernameFutureCache = {};
   Future<String> _getUsernameFuture(String uid) {
@@ -33,6 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     _initPingsStream();
     _initProfileData();
+    _loadStats();
   }
 
   Future<void> _initProfileData() async {
@@ -73,7 +77,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
       uid = currentUid;
       username = currentUsername;
       accountCreated = time;
-      initComplete = true;
+    });
+  }
+
+  Future<void> _loadStats() async {
+    final currentUid = getUid();
+    if (!mounted) return;
+
+    final sentPings = db.collection('Pings').where('sender', isEqualTo: currentUid);
+    final sentPingsCount = await sentPings.count().get();
+
+    final receivedPings = db.collection('Pings').where('receiver', isEqualTo: currentUid);
+    final receivedPingsCount = await receivedPings.count().get();
+
+    final followers = db.collection('Users').where('friends', arrayContains: currentUid);
+    final currentFollowersCount = await followers.count().get();
+
+    final following = await db.collection('Users').doc(uid).get();
+    final followList = following['friends'] as List<dynamic>;
+    final currentFollowingCount = followList.length;
+
+    setState(() {
+      sentCount = sentPingsCount.count ?? 0;
+      receivedCount = receivedPingsCount.count ?? 0;
+      followingCount = currentFollowingCount;
+      followersCount = currentFollowersCount.count ?? 0;
     });
   }
 
@@ -154,7 +182,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Expanded(
                           child: TabBarView(
                             children: [
-                              Column(),
+                              ListView(
+                                children: [
+                                  ListTile(
+                                    title: Text('Pings sent'),
+                                    trailing: Text(sentCount.toString(), style: TextStyle(fontSize: 16)),
+                                  ),
+                                  ListTile(
+                                    title: Text('Pings received'),
+                                    trailing: Text(receivedCount.toString(), style: TextStyle(fontSize: 16)),
+                                  ),
+                                  ListTile(
+                                    title: Text('Friends'),
+                                    trailing: Text(followingCount.toString(), style: TextStyle(fontSize: 16)),
+                                  ),
+                                  ListTile(
+                                    title: Text('Followers'),
+                                    trailing: Text(followersCount.toString(), style: TextStyle(fontSize: 16)),
+                                  ),
+                                ],
+                              ),
                               StreamBuilder(
                                 stream: pingsStream,
                                 builder: (context, snapshot) {
