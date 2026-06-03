@@ -133,10 +133,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           title: const Text('Profile'),
           actions: [
             IconButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProfileEditScreen()),
-              ),
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProfileEditScreen()),
+                );
+
+                _usernameFutureCache.clear();
+                _initProfileData();
+              },
               icon: Icon(Icons.edit),
             ),
             IconButton(

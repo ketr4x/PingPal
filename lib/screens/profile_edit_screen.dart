@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pingpal/helpers.dart';
 
+import 'change_username_screen.dart';
 import '../handlers/database_handler.dart';
 
 class ProfileEditScreen extends StatefulWidget {
@@ -21,6 +22,20 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           child: ListView(
             children: [
               ListTile(
+                title: Text('Change username'),
+                trailing: ElevatedButton(
+                  onPressed: () async {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChangeUsernameScreen(),
+                      ),
+                    );
+                  },
+                  child: Text('Change'),
+                ),
+              ),
+              ListTile(
                 title: Text('Sign out'),
                 trailing: FilledButton(
                   onPressed: () async {
@@ -32,6 +47,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               ListTile(
                 title: Text('Delete the account'),
                 trailing: FilledButton(
+                  style: ButtonStyle(backgroundColor: .all(Colors.red)),
                   onPressed: () => showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
