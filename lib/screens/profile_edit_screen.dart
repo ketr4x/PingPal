@@ -1,4 +1,7 @@
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:pingpal/helpers.dart';
 
 import 'change_username_screen.dart';
@@ -21,6 +24,46 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         child: Center(
           child: ListView(
             children: [
+              ListTile(
+                title: Text('Change Avatar'),
+                trailing: ElevatedButton(
+                  onPressed: () async {
+                    final picker = ImagePicker();
+                    final pickedFile = await picker.pickImage(
+                      source: ImageSource.gallery,
+                    );
+
+                    if (pickedFile != null && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Uploading avatar...')),
+                      );
+
+                      final uid = getUid();
+                      final file = File(pickedFile.path);
+
+                      final storageRef = FirebaseStorage.instance.ref().child(
+                        'avatars/$uid.jpg',
+                      );
+                      await storageRef.putFile(file);
+
+                      final downloadUrl = await storageRef.getDownloadURL();
+
+                      await db.collection('Users').doc(uid).update({
+                        'photoUrl': downloadUrl,
+                      });
+
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Avatar updated successfully'),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  child: Text('Upload'),
+                ),
+              ),
               ListTile(
                 title: Text('Change username'),
                 trailing: ElevatedButton(

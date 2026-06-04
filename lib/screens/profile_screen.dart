@@ -19,6 +19,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? uid;
   String username = "Unknown";
   String accountCreated = "Unknown";
+  String photoUrl = '';
   int sentCount = 0;
   int receivedCount = 0;
   int followersCount = 0;
@@ -77,6 +78,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       uid = currentUid;
       username = currentUsername;
       accountCreated = time;
+      photoUrl = userDoc['photoUrl'];
     });
   }
 
@@ -165,10 +167,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Row(
                       spacing: 10,
                       children: [
-                        Icon(
-                          Icons.account_circle,
-                          size: 72,
-                        ), // Add the profile avatar here
+                        photoUrl != ''
+                            ? CircleAvatar(
+                                radius: 36,
+                                backgroundImage: NetworkImage(photoUrl),
+                              )
+                            : Icon(Icons.account_circle, size: 72),
                         Column(
                           crossAxisAlignment: .start,
                           children: [

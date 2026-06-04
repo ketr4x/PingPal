@@ -12,6 +12,8 @@ An app to ping and find your friends.
 - Background notifications
 - Sending a location ping
 - Map
+- Friends list
+- Profile page with stats
 
 ## Installation
 - Go to [Releases](https://github.com/ketr4x/PingPal/releases)
@@ -26,7 +28,6 @@ An app to ping and find your friends.
 - Bugfixes
 - User profile customization
 - Migrating a guest account to a real one
-- Data deletion
 - UI/UX overhaul
 
 ## License
