@@ -120,6 +120,7 @@ android/app/google-services.json
 firebase.json
 firestore.indexes.json
 firestore.rules
+storage.rules
 lib/firebase_options.dart
 
 # Exceptions to above rules.
