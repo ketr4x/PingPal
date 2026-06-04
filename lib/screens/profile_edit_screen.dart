@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:pingpal/helpers.dart';
 
+import '../helpers.dart';
 import 'change_username_screen.dart';
 import '../handlers/database_handler.dart';
 
@@ -28,18 +29,67 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 title: Text('Change Avatar'),
                 trailing: ElevatedButton(
                   onPressed: () async {
-                    final picker = ImagePicker();
-                    final pickedFile = await picker.pickImage(
-                      source: ImageSource.gallery,
+                    final source = await showModalBottomSheet(
+                      context: context,
+                      builder: (context) {
+                        return SafeArea(
+                          child: Wrap(
+                            children: [
+                              ListTile(
+                                leading: Icon(Icons.photo_library),
+                                title: Text('Photos'),
+                                onTap: () => Navigator.of(
+                                  context,
+                                ).pop(ImageSource.gallery),
+                              ),
+                              ListTile(
+                                leading: Icon(Icons.camera_alt),
+                                title: Text('Camera'),
+                                onTap: () => Navigator.of(
+                                  context,
+                                ).pop(ImageSource.camera),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     );
 
+                    if (source == null) return;
+
+                    final picker = ImagePicker();
+                    final pickedFile = await picker.pickImage(source: source);
+
                     if (pickedFile != null && context.mounted) {
+                      final croppedFile = await ImageCropper().cropImage(
+                        sourcePath: pickedFile.path,
+                        aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+                        uiSettings: [
+                          AndroidUiSettings(
+                              toolbarTitle: 'Position Avatar',
+                              toolbarColor: Theme.of(context).colorScheme.primary,
+                              toolbarWidgetColor: Theme.of(context).colorScheme.onPrimary,
+                              backgroundColor: Theme.of(context).colorScheme.surface,
+                              initAspectRatio: CropAspectRatioPreset.square,
+                              lockAspectRatio: true,
+                              hideBottomControls: false
+                          ),
+                          IOSUiSettings(
+                            title: 'Position Avatar',
+                            aspectRatioLockEnabled: true,
+                            resetButtonHidden: true
+                          )
+                        ]
+                      );
+
+                      if (croppedFile == null || !context.mounted) return;
+
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Uploading avatar...')),
                       );
 
                       final uid = getUid();
-                      final file = File(pickedFile.path);
+                      final file = File(croppedFile.path);
 
                       final storageRef = FirebaseStorage.instance.ref().child(
                         'avatars/$uid.jpg',
