@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pingpal/globals.dart';
 
 import '../handlers/database_handler.dart';
 import '../helpers.dart';
@@ -111,6 +112,7 @@ class _ChangeUsernameScreenState extends State<ChangeUsernameScreen> {
                             ),
                           );
 
+                          usernameFutureCache.remove(uid);
                           Navigator.of(context).pop(context);
                         } catch (e) {
                           printDebug('Unable to change username: $e');

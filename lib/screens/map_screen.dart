@@ -24,11 +24,6 @@ class _MapScreenState extends State<MapScreen> {
   final _mapController = MapController();
   String? _selectedPingId;
 
-  final Map<String, Future<String>> _usernameFutureCache = {};
-  Future<String> _getUsernameFuture(String uid) {
-    return _usernameFutureCache.putIfAbsent(uid, () => getUsernameByUid(uid));
-  }
-
   final cutoff = Timestamp.fromDate(
     DateTime.now().subtract(const Duration(hours: 24)),
   );
@@ -84,7 +79,7 @@ class _MapScreenState extends State<MapScreen> {
                 ],
               ),
               child: FutureBuilder<String>(
-                future: _getUsernameFuture(senderUid),
+                future: getUsernameFuture(senderUid),
                 builder: (context, usernameSnapshot) {
                   if (usernameSnapshot.connectionState !=
                       ConnectionState.done) {

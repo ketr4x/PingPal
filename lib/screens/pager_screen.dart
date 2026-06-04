@@ -19,11 +19,6 @@ class _PagerScreenState extends State<PagerScreen> {
   String? uid;
   Map<String, dynamic>? userData;
 
-  final Map<String, Future<String>> _usernameFutureCache = {};
-  Future<String> _getUsernameFuture(String uid) {
-    return _usernameFutureCache.putIfAbsent(uid, () => getUsernameByUid(uid));
-  }
-
   late Stream<QuerySnapshot<Map<String, dynamic>>> pingsStream = Stream.empty();
 
   @override
@@ -221,7 +216,7 @@ class _PagerScreenState extends State<PagerScreen> {
 
                                 return ListTile(
                                   title: FutureBuilder(
-                                    future: _getUsernameFuture(receiverUid),
+                                    future: getUsernameFuture(receiverUid),
                                     builder: (context, usernameSnapshot) {
                                       if (!usernameSnapshot.hasData) {
                                         return const Text('Loading...');

@@ -66,20 +66,24 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
                         uiSettings: [
                           AndroidUiSettings(
-                              toolbarTitle: 'Position Avatar',
-                              toolbarColor: Theme.of(context).colorScheme.primary,
-                              toolbarWidgetColor: Theme.of(context).colorScheme.onPrimary,
-                              backgroundColor: Theme.of(context).colorScheme.surface,
-                              initAspectRatio: CropAspectRatioPreset.square,
-                              lockAspectRatio: true,
-                              hideBottomControls: false
+                            toolbarTitle: 'Position Avatar',
+                            toolbarColor: Theme.of(context).colorScheme.primary,
+                            toolbarWidgetColor: Theme.of(
+                              context,
+                            ).colorScheme.onPrimary,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.surface,
+                            initAspectRatio: CropAspectRatioPreset.square,
+                            lockAspectRatio: true,
+                            hideBottomControls: false,
                           ),
                           IOSUiSettings(
                             title: 'Position Avatar',
                             aspectRatioLockEnabled: true,
-                            resetButtonHidden: true
-                          )
-                        ]
+                            resetButtonHidden: true,
+                          ),
+                        ],
                       );
 
                       if (croppedFile == null || !context.mounted) return;
@@ -94,7 +98,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       final storageRef = FirebaseStorage.instance.ref().child(
                         'avatars/$uid.jpg',
                       );
-                      await storageRef.putFile(file, SettableMetadata(contentType: 'image/jpeg'));
+                      await storageRef.putFile(
+                        file,
+                        SettableMetadata(contentType: 'image/jpeg'),
+                      );
 
                       final downloadUrl = await storageRef.getDownloadURL();
 

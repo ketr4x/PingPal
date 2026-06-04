@@ -4,12 +4,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'handlers/database_handler.dart';
 import 'screens/login_screen.dart';
 import 'providers/ping_provider.dart';
 import 'screens/map_screen.dart';
 import 'screens/pager_screen.dart';
 import 'screens/friends_screen.dart';
 import 'screens/profile_screen.dart';
+import 'globals.dart';
 
 void printDebug(String text) {
   if (kDebugMode) {
@@ -113,4 +115,8 @@ Future<void> signOut(BuildContext context) async {
   } catch (e) {
     printDebug('Cannot sign out: $e');
   }
+}
+
+Future<String> getUsernameFuture(String uid) {
+  return usernameFutureCache.putIfAbsent(uid, () => getUsernameByUid(uid));
 }

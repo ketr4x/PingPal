@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -24,11 +25,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int receivedCount = 0;
   int followersCount = 0;
   int followingCount = 0;
-
-  final Map<String, Future<String>> _usernameFutureCache = {};
-  Future<String> _getUsernameFuture(String uid) {
-    return _usernameFutureCache.putIfAbsent(uid, () => getUsernameByUid(uid));
-  }
 
   late Stream<QuerySnapshot<Map<String, dynamic>>> pingsStream = Stream.empty();
 
@@ -140,8 +136,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   context,
                   MaterialPageRoute(builder: (context) => ProfileEditScreen()),
                 );
-
-                _usernameFutureCache.clear();
                 _initProfileData();
               },
               icon: Icon(Icons.edit),
@@ -170,7 +164,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         photoUrl != ''
                             ? CircleAvatar(
                                 radius: 36,
-                                backgroundImage: NetworkImage(photoUrl),
+                                backgroundImage: CachedNetworkImageProvider(
+                                  photoUrl,
+                                ),
                               )
                             : Icon(Icons.account_circle, size: 72),
                         Column(
@@ -315,7 +311,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                                             return ListTile(
                                               title: FutureBuilder(
-                                                future: _getUsernameFuture(
+                                                future: getUsernameFuture(
                                                   senderUid,
                                                 ),
                                                 builder:
