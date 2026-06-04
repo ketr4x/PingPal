@@ -21,6 +21,7 @@ Future<void> createAccount(
       "friends": [],
       "fcm_token": await FirebaseMessaging.instance.getToken(),
       "account_created": FieldValue.serverTimestamp(),
+      "photoUrl": '',
     });
 
     printDebug('Created account with uid $uid');
