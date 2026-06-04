@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'link_account_screen.dart';
 import '../helpers.dart';
 import 'change_username_screen.dart';
 import '../handlers/database_handler.dart';
@@ -133,6 +134,20 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     );
                   },
                   child: Text('Change'),
+                ),
+              ),
+              ListTile(
+                title: Text('Link accounts'),
+                trailing: ElevatedButton(
+                  onPressed: () async {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => LinkAccountScreen(),
+                      ),
+                    );
+                  },
+                  child: Text('Link Accounts'),
                 ),
               ),
               ListTile(

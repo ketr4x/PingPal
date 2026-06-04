@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
+import '../widgets.dart';
 import 'choose_username_screen.dart';
 import '../handlers/database_handler.dart';
 import '../helpers.dart';
@@ -22,16 +22,6 @@ class _LoginScreenState extends State<LoginScreen> {
   bool userLoggedIn = false;
   bool userComplete = false;
   bool userChecked = false;
-
-  Row buildLoginRow(String icon, double size) {
-    return Row(
-      children: [
-        SvgPicture.asset('assets/logos/$icon.svg', height: size, width: size),
-        SizedBox(width: 14),
-        Text('Sign in ${icon == "google" ? 'with Google' : 'as a guest'}'),
-      ],
-    );
-  }
 
   @override
   void initState() {

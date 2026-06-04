@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../handlers/database_handler.dart';
 import '../handlers/location_service.dart';
 import '../helpers.dart';
+import '../widgets.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});

@@ -6,6 +6,7 @@ import 'profile_edit_screen.dart';
 import 'settings_screen.dart';
 import '../handlers/database_handler.dart';
 import '../helpers.dart';
+import '../widgets.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});

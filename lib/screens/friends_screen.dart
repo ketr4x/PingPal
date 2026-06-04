@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../widgets.dart';
 import '../helpers.dart';
 import '../handlers/database_handler.dart';
 import 'add_friend_screen.dart';

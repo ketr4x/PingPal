@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../handlers/database_handler.dart';
 import '../helpers.dart';
+import '../widgets.dart';
 
 class PagerScreen extends StatefulWidget {
   const PagerScreen({super.key});
