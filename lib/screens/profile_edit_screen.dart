@@ -94,7 +94,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       final storageRef = FirebaseStorage.instance.ref().child(
                         'avatars/$uid.jpg',
                       );
-                      await storageRef.putFile(file);
+                      await storageRef.putFile(file, SettableMetadata(contentType: 'image/jpeg'));
 
                       final downloadUrl = await storageRef.getDownloadURL();
 
