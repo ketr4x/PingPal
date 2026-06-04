@@ -8,6 +8,7 @@ import '../handlers/database_handler.dart';
 import '../helpers.dart';
 import 'anonymous_login_screen.dart';
 import 'pager_screen.dart';
+import '../globals.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -61,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return PagerScreen();
     }
     if (userLoggedIn) {
-      return ChooseUsernameScreen();
+      return ChooseUsernameScreen(type: getAccountType(user));
     }
 
     return userChecked
@@ -136,7 +137,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => ChooseUsernameScreen(),
+                                builder: (context) => ChooseUsernameScreen(
+                                  type: AccountType.google,
+                                ),
                               ),
                             );
                           }

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../handlers/database_handler.dart';
 import '../helpers.dart';
+import '../globals.dart';
 
 class AnonymousLoginScreen extends StatefulWidget {
   const AnonymousLoginScreen({super.key});
@@ -103,7 +104,7 @@ class _AnonymousLoginScreenState extends State<AnonymousLoginScreen> {
                           }
 
                           await getNotificationsPermission(context);
-                          await createAccount(uid, username);
+                          await createAccount(uid, username, AccountType.guest);
 
                           if (!context.mounted) {
                             return;

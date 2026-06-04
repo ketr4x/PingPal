@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 
 import '../handlers/database_handler.dart';
 import '../helpers.dart';
+import '../globals.dart';
 
 class ChooseUsernameScreen extends StatefulWidget {
-  const ChooseUsernameScreen({super.key});
+  const ChooseUsernameScreen({super.key, required this.type});
+  final AccountType type;
 
   @override
   State<ChooseUsernameScreen> createState() => _ChooseUsernameScreenState();
@@ -103,7 +105,7 @@ class _ChooseUsernameScreenState extends State<ChooseUsernameScreen> {
                             }
                           }
 
-                          await createAccount(uid, username);
+                          await createAccount(uid, username, widget.type);
 
                           if (!context.mounted) {
                             return;

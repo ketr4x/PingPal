@@ -120,3 +120,15 @@ Future<void> signOut(BuildContext context) async {
 Future<String> getUsernameFuture(String uid) {
   return usernameFutureCache.putIfAbsent(uid, () => getUsernameByUid(uid));
 }
+
+AccountType getAccountType(User? user) {
+  if (user == null || user.isAnonymous) return AccountType.guest;
+
+  for (final userInfo in user.providerData) {
+    switch (userInfo.providerId) {
+      case 'google.com':
+        return AccountType.google;
+    }
+  }
+  return AccountType.guest;
+}

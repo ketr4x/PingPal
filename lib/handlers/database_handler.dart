@@ -9,14 +9,18 @@ import '../helpers.dart';
 
 FirebaseFirestore db = FirebaseFirestore.instance;
 
-Future<void> createAccount(String? uid, String username) async {
+Future<void> createAccount(
+  String? uid,
+  String username,
+  AccountType type,
+) async {
   try {
     await db.collection('Users').doc(uid).set({
       "username": username,
       "username_lower": username.toLowerCase(),
       "friends": [],
       "fcm_token": await FirebaseMessaging.instance.getToken(),
-      'account_created': FieldValue.serverTimestamp(),
+      "account_created": FieldValue.serverTimestamp(),
     });
 
     printDebug('Created account with uid $uid');
