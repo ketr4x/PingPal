@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'chat_screen.dart';
 import '../widgets.dart';
 import '../helpers.dart';
 import '../handlers/database_handler.dart';
@@ -95,6 +96,14 @@ class _FriendsScreenState extends State<FriendsScreen> {
 
                             return Card(
                               child: ListTile(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ChatScreen(uid: friendUid),
+                                    ),
+                                  );
+                                },
                                 title: Text(username),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,

@@ -180,3 +180,17 @@ Future<void> deleteFriend(String friendUid) async {
     printDebug('Unable to remove friend');
   }
 }
+
+Future<void> sendMessage(String roomId, String message) async {
+  final uid = getUid();
+
+  try {
+    await db.collection('Chat').doc(roomId).collection('Messages').add({
+      'sender': uid,
+      'text': message,
+      'timestamp': FieldValue.serverTimestamp()
+    });
+  } catch (e) {
+    printDebug('Cannot send message: $e');
+  }
+}
