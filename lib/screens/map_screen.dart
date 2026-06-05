@@ -69,7 +69,7 @@ class _MapScreenState extends State<MapScreen> {
               margin: const EdgeInsets.only(bottom: 4),
               padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: const [
                   BoxShadow(
@@ -296,6 +296,9 @@ class _MapScreenState extends State<MapScreen> {
                     urlTemplate:
                         'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'com.ketr4x.pingpal',
+                    tileBuilder: Theme.of(context).brightness == Brightness.dark
+                        ? darkModeTileBuilder
+                        : null,
                   ),
                   MarkerClusterLayerWidget(
                     options: MarkerClusterLayerOptions(
@@ -309,12 +312,14 @@ class _MapScreenState extends State<MapScreen> {
                         return Container(
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Theme.of(context).colorScheme.primary,
+                            color: Theme.of(context).colorScheme.surface,
                           ),
                           child: Center(
                             child: Text(
                               markers.length.toString(),
-                              style: const TextStyle(color: Colors.white),
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
                             ),
                           ),
                         );
