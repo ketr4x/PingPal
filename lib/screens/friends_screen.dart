@@ -100,7 +100,8 @@ class _FriendsScreenState extends State<FriendsScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => ChatScreen(uid: friendUid),
+                                      builder: (context) =>
+                                          ChatScreen(uid: friendUid),
                                     ),
                                   );
                                 },

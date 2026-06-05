@@ -26,7 +26,7 @@ Future<void> createAccount(
 
     printDebug('Created account with uid $uid');
   } catch (e) {
-    printDebug('Unable to create account');
+    printDebug('Unable to create account: $e');
   }
 }
 
@@ -188,7 +188,7 @@ Future<void> sendMessage(String roomId, String message) async {
     await db.collection('Chat').doc(roomId).collection('Messages').add({
       'sender': uid,
       'text': message,
-      'timestamp': FieldValue.serverTimestamp()
+      'timestamp': FieldValue.serverTimestamp(),
     });
   } catch (e) {
     printDebug('Cannot send message: $e');
