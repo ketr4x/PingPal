@@ -8,6 +8,7 @@ import 'link_account_screen.dart';
 import '../helpers.dart';
 import 'change_username_screen.dart';
 import '../handlers/database_handler.dart';
+import '../globals.dart';
 
 class ProfileEditScreen extends StatefulWidget {
   const ProfileEditScreen({super.key});
@@ -94,9 +95,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       final uid = getUid();
                       final file = File(croppedFile.path);
 
-                      final storageRef = FirebaseStorage.instance.ref().child(
-                        'avatars/$uid.jpg',
-                      );
+                      storageRef.child('avatars/$uid.jpg');
                       await storageRef.putFile(
                         file,
                         SettableMetadata(contentType: 'image/jpeg'),

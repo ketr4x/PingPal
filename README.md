@@ -27,7 +27,6 @@ An app to ping and find your friends.
 - Notification overhaul (support map pings and add a button where applicable)
 - Bugfixes
 - User profile customization
-- Migrating a guest account to a real one
 - UI/UX overhaul
 
 ## License
