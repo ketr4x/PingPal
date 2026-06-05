@@ -82,10 +82,9 @@ class _ChangeUsernameScreenState extends State<ChangeUsernameScreen> {
                             final docId = matchingUsernameUser.docs.first.id;
                             if (docId != uid) {
                               if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Username is already taken'),
-                                  ),
+                                showAdaptiveSnackBar(
+                                  context,
+                                  'Username is already taken',
                                 );
                               }
                               setState(() {
@@ -105,12 +104,7 @@ class _ChangeUsernameScreenState extends State<ChangeUsernameScreen> {
                           }
 
                           printDebug('Changed the username');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Changed the username'),
-                              duration: Duration(seconds: 3),
-                            ),
-                          );
+                          showAdaptiveSnackBar(context, 'Changed the username');
 
                           usernameFutureCache.remove(uid);
                           Navigator.of(context).pop(context);

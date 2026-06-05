@@ -81,11 +81,9 @@ class _PagerScreenState extends State<PagerScreen> {
                             .get();
                         if (receiver.docs.isEmpty) {
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Receiver does not exist'),
-                                duration: Duration(seconds: 3),
-                              ),
+                            showAdaptiveSnackBar(
+                              context,
+                              'Receiver does not exist',
                             );
                           }
                           printDebug('Receiver does not exist');
@@ -112,11 +110,9 @@ class _PagerScreenState extends State<PagerScreen> {
                             .get();
                         if (receiver.docs.isEmpty) {
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Receiver does not exist'),
-                                duration: Duration(seconds: 3),
-                              ),
+                            showAdaptiveSnackBar(
+                              context,
+                              'User is already your friend',
                             );
                           }
                           printDebug('Receiver does not exist');

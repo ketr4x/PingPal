@@ -126,12 +126,9 @@ class _LinkAccountScreenState extends State<LinkAccountScreen> {
 
                         printDebug('Successfully linked a Google account');
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Successfully linked a Google account',
-                              ),
-                            ),
+                          showAdaptiveSnackBar(
+                            context,
+                            'Successfully linked a Google account',
                           );
                         }
 
@@ -142,12 +139,9 @@ class _LinkAccountScreenState extends State<LinkAccountScreen> {
                             'This Google account is already linked to another user',
                           );
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'This Google account is already linked to another user',
-                                ),
-                              ),
+                            showAdaptiveSnackBar(
+                              context,
+                              'This Google account is already linked to another user',
                             );
                           }
                         }
@@ -155,8 +149,9 @@ class _LinkAccountScreenState extends State<LinkAccountScreen> {
                     } catch (e) {
                       printDebug('Unable to connect account: $e');
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Unable to connect account')),
+                        showAdaptiveSnackBar(
+                          context,
+                          'Unable to connect account',
                         );
                       }
                     }

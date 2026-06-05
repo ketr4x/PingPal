@@ -33,13 +33,30 @@ class PingPal extends StatelessWidget {
   final AdaptiveThemeMode? savedThemeMode;
   const PingPal({super.key, this.savedThemeMode});
 
+  ThemeData _theme(Brightness brightness) {
+    final theme = brightness == Brightness.dark
+        ? ThemeData.dark(useMaterial3: true)
+        : ThemeData.light(useMaterial3: true);
+    final colors = theme.colorScheme;
+    final isDark = brightness == Brightness.dark;
+
+    return theme.copyWith(
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: isDark
+            ? colors.surfaceContainerHighest
+            : colors.surfaceContainer,
+        contentTextStyle: TextStyle(color: colors.onSurface),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => PingProvider(),
       child: AdaptiveTheme(
-        light: .light(useMaterial3: true),
-        dark: .dark(useMaterial3: true),
+        light: _theme(Brightness.light),
+        dark: _theme(Brightness.dark),
         initial: savedThemeMode ?? AdaptiveThemeMode.system,
         builder: (theme, darkTheme) => MaterialApp(
           title: 'PingPal',

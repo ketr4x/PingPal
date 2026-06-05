@@ -51,12 +51,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                       printDebug('Cannot find the user');
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("Cannot find this user"),
-                            duration: Duration(seconds: 3),
-                          ),
-                        );
+                        showAdaptiveSnackBar(context, 'Cannot find this user');
                       });
                       return;
                     }
@@ -70,11 +65,9 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                       printDebug('User is already in friendlist');
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("User is already your friend"),
-                            duration: Duration(seconds: 3),
-                          ),
+                        showAdaptiveSnackBar(
+                          context,
+                          'User is already your friend',
                         );
                       });
                       return;
@@ -90,11 +83,9 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                           printDebug('User added to friendlist');
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             if (!mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text("User added to friendlist"),
-                                duration: Duration(seconds: 3),
-                              ),
+                            showAdaptiveSnackBar(
+                              context,
+                              'User added to friendlist',
                             );
                           });
                         });

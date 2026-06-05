@@ -89,9 +89,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
                       if (croppedFile == null || !context.mounted) return;
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Uploading avatar...')),
-                      );
+                      showAdaptiveSnackBar(context, 'Uploading avatar...');
 
                       final uid = getUid();
                       final file = File(croppedFile.path);
@@ -111,10 +109,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       });
 
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Avatar updated successfully'),
-                          ),
+                        showAdaptiveSnackBar(
+                          context,
+                          'User is already your friend',
                         );
                       }
                     }

@@ -92,10 +92,9 @@ class _ChooseUsernameScreenState extends State<ChooseUsernameScreen> {
                             final docId = matchingUsernameUser.docs.first.id;
                             if (docId != uid) {
                               if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Username is already taken'),
-                                  ),
+                                showAdaptiveSnackBar(
+                                  context,
+                                  'Username is already taken',
                                 );
                               }
                               setState(() {

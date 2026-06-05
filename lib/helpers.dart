@@ -27,12 +27,7 @@ Future<void> getNotificationsPermission(BuildContext context) async {
   if (permission.authorizationStatus == AuthorizationStatus.denied) {
     printDebug('Notifications disabled');
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Notifications disabled'),
-          duration: Duration(seconds: 3),
-        ),
-      );
+      showAdaptiveSnackBar(context, 'Notifications disabled');
     });
   }
 }
@@ -83,4 +78,16 @@ AccountType getAccountType(User? user) {
     }
   }
   return AccountType.guest;
+}
+
+void showAdaptiveSnackBar(BuildContext context, String text) {
+  final colors = Theme.of(context).colorScheme;
+  if (context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(text, style: TextStyle(color: colors.onSurface)),
+        backgroundColor: colors.surfaceContainerHighest,
+      ),
+    );
+  }
 }
