@@ -134,3 +134,6 @@ frontend/firebase.json
 frontend/android/app/google-services.json
 frontend/lib/firebase_options.dart
 .idea/
+
+skills-lock.json
+.agents/

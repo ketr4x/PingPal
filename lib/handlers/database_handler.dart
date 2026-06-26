@@ -56,8 +56,14 @@ Future<void> deleteAccount(String uid) async {
     }
 
     await db.collection('Users').doc(uid).delete();
+
+    try {
+      await storageRef.child('avatars/$uid.jpg').delete();
+    } catch (e) {
+      printDebug('Avatar delete skipped: $e');
+    }
+
     await FirebaseAuth.instance.currentUser?.delete();
-    await storageRef.child('avatars/$uid').delete();
     printDebug('Deleted account with uid $uid');
   } catch (e) {
     printDebug('Unable to delete account');
