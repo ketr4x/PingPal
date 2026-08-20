@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
+import 'screens/chats_screen.dart';
 import 'screens/map_screen.dart';
 import 'screens/pager_screen.dart';
 import 'screens/friends_screen.dart';
@@ -19,6 +20,10 @@ Row buildLoginRow(String icon, double size) {
 BottomNavigationBar bottomNavBar(BuildContext context, int currentIndex) {
   return BottomNavigationBar(
     items: [
+      BottomNavigationBarItem(
+        icon: Icon(Icons.chat),
+        label: 'Chats',
+      ),
       BottomNavigationBarItem(
         icon: Icon(Icons.notification_add),
         label: 'Pager',
@@ -39,15 +44,18 @@ BottomNavigationBar bottomNavBar(BuildContext context, int currentIndex) {
       Widget page;
       switch (index) {
         case 0:
-          page = PagerScreen();
+          page = ChatsScreen();
           break;
         case 1:
-          page = FriendsScreen();
+          page = PagerScreen();
           break;
         case 2:
-          page = MapScreen();
+          page = FriendsScreen();
           break;
         case 3:
+          page = MapScreen();
+          break;
+        case 4:
           page = ProfileScreen();
           break;
         default:

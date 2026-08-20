@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import 'handlers/database_handler.dart';
 import 'screens/login_screen.dart';
 import 'providers/ping_provider.dart';
-import 'screens/pager_screen.dart';
+import 'screens/chats_screen.dart';
 import 'globals.dart';
 
 void printDebug(String text) {
@@ -42,7 +42,7 @@ void enterApp(BuildContext context, String uid) {
     Provider.of<PingProvider>(context, listen: false).startListening(uid);
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => PagerScreen()),
+      MaterialPageRoute(builder: (context) => ChatsScreen()),
       (Route<dynamic> route) => false,
     );
   }

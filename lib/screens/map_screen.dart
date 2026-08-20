@@ -18,7 +18,7 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  final _selectedIndex = 2;
+  final _selectedIndex = 3;
 
   final uid = getUid();
 
@@ -339,6 +339,12 @@ class _MapScreenState extends State<MapScreen> {
                       ),
                     ],
                   ),
+                  IconButton(
+                    onPressed: () {
+                      _mapController.move(LatLng(latitude, longitude), 13);
+                    },
+                    icon: Icon(Icons.my_location),
+                  )
                 ],
               );
             },

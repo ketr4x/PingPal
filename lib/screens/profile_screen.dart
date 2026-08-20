@@ -16,7 +16,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final _selectedIndex = 3;
+  final _selectedIndex = 4;
 
   String? uid;
   String username = "Unknown";

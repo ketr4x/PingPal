@@ -13,7 +13,7 @@ class PagerScreen extends StatefulWidget {
 }
 
 class _PagerScreenState extends State<PagerScreen> {
-  final _selectedIndex = 0;
+  final _selectedIndex = 1;
 
   final usernameController = TextEditingController();
 

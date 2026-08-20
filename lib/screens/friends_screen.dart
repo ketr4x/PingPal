@@ -15,7 +15,7 @@ class FriendsScreen extends StatefulWidget {
 }
 
 class _FriendsScreenState extends State<FriendsScreen> {
-  final _selectedIndex = 1;
+  final _selectedIndex = 2;
 
   final uid = getUid();
   late final Stream<DocumentSnapshot<Map<String, dynamic>>> _userDocStream = db

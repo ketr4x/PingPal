@@ -26,6 +26,9 @@ An app to ping and find your friends.
 - Notification overhaul (support map pings and add a button where applicable)
 - Bugfixes
 - UI/UX overhaul
+- [Chat] Encryption
+- [Chat] Images, attachments
+- Main page
 
 ## License
 Copyright ketr4x, 2026. Licensed under Apache-2.0 license.

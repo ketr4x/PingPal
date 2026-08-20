@@ -7,7 +7,7 @@ import 'choose_username_screen.dart';
 import '../handlers/database_handler.dart';
 import '../helpers.dart';
 import 'anonymous_login_screen.dart';
-import 'pager_screen.dart';
+import 'chats_screen.dart';
 import '../globals.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -49,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     if (userLoggedIn && userComplete) {
       startListening(context);
-      return PagerScreen();
+      return ChatsScreen();
     }
     if (userLoggedIn) {
       return ChooseUsernameScreen(type: getAccountType(user));
