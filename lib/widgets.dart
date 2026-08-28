@@ -20,10 +20,7 @@ Row buildLoginRow(String icon, double size) {
 BottomNavigationBar bottomNavBar(BuildContext context, int currentIndex) {
   return BottomNavigationBar(
     items: [
-      BottomNavigationBarItem(
-        icon: Icon(Icons.chat),
-        label: 'Chats',
-      ),
+      BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chats'),
       BottomNavigationBarItem(
         icon: Icon(Icons.notification_add),
         label: 'Pager',

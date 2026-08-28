@@ -146,12 +146,7 @@ class _ChatScreenState extends State<ChatScreen> {
               Row(
                 spacing: 8,
                 children: [
-                  IconButton(
-                    icon: Icon(Icons.photo),
-                    onPressed: () {
-                      
-                    },
-                  ),
+                  IconButton(icon: Icon(Icons.photo), onPressed: () {}),
                   Expanded(
                     child: TextField(
                       controller: textController,

@@ -344,7 +344,7 @@ class _MapScreenState extends State<MapScreen> {
                       _mapController.move(LatLng(latitude, longitude), 13);
                     },
                     icon: Icon(Icons.my_location),
-                  )
+                  ),
                 ],
               );
             },
