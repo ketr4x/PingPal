@@ -68,10 +68,10 @@ class _ChatsScreenState extends State<ChatsScreen> {
                 future: _loadFriendMap(friends),
                 builder: (context, friendMapSnapshot) {
                   if (friendMapSnapshot.hasError) {
-                    Center(child: Text('Something went wrong'));
+                    return Center(child: Text('Something went wrong'));
                   }
                   if (!friendMapSnapshot.hasData) {
-                    Center(child: CircularProgressIndicator());
+                    return Center(child: CircularProgressIndicator());
                   }
 
                   final friendMap = friendMapSnapshot.data!;
@@ -87,29 +87,81 @@ class _ChatsScreenState extends State<ChatsScreen> {
                       final data = entry.value;
                       final username = data['username'];
                       final photoUrl = data['photoUrl'] ?? '';
+                      final roomId = generateRoomId(friendUid, uid);
 
-                      return ListTile(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ChatScreen(uid: friendUid),
-                            ),
-                          );
-                        },
-                        leading: photoUrl != ''
-                            ? CircleAvatar(
-                                radius: 36,
-                                backgroundImage: CachedNetworkImageProvider(
-                                  photoUrl,
-                                ),
-                              )
-                            : Icon(Icons.account_circle, size: 54),
-                        title: Text(username!),
-                        //trailing: StreamBuilder(
-                        //  stream: stream,
-                        //  builder: builder,
-                        //),
+                      final messagesStream = db
+                          .collection('Chat')
+                          .doc(roomId)
+                          .collection('Messages')
+                          .orderBy('timestamp', descending: true)
+                          .limit(1)
+                          .snapshots();
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: StreamBuilder(
+                          stream: messagesStream,
+                          builder: (context, messagesSnapshot) {
+                            String? lastMessage;
+                            String? time;
+
+                            if (messagesSnapshot.hasData &&
+                                messagesSnapshot.data!.docs.isNotEmpty) {
+                              final data = messagesSnapshot.data!.docs.first
+                                  .data();
+                              lastMessage = data['text'];
+                              final timestamp = data['timestamp'];
+
+                              final sentAt = timestamp.toDate().toLocal();
+                              final now = DateTime.now();
+                              final hh = sentAt.hour.toString().padLeft(2, '0');
+                              final mm = sentAt.minute.toString().padLeft(
+                                2,
+                                '0',
+                              );
+                              final month = sentAt.month.toString().padLeft(
+                                2,
+                                '0',
+                              );
+                              final day = sentAt.day.toString().padLeft(2, '0');
+
+                              final isToday =
+                                  sentAt.year == now.year &&
+                                  sentAt.month == now.month &&
+                                  sentAt.day == now.day;
+
+                              if (isToday) {
+                                time = '$hh:$mm';
+                              } else if (sentAt.year == now.year) {
+                                time = '$month/$day $hh:$mm';
+                              } else {
+                                time = '${sentAt.year}/$month/$day $hh:$mm';
+                              }
+                            }
+
+                            return ListTile(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ChatScreen(uid: friendUid),
+                                  ),
+                                );
+                              },
+                              leading: photoUrl != ''
+                                  ? CircleAvatar(
+                                      radius: 36,
+                                      backgroundImage:
+                                          CachedNetworkImageProvider(photoUrl),
+                                    )
+                                  : Icon(Icons.account_circle, size: 54),
+                              title: Text(username!),
+                              subtitle: Text(lastMessage ?? 'Unknown'),
+                              trailing: Text(time ?? 'Unknown'),
+                            );
+                          },
+                        ),
                       );
                     },
                   );
