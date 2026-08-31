@@ -1,6 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
+import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
+
+import '../globals.dart';
 import '../handlers/database_handler.dart';
 import '../helpers.dart';
 
@@ -125,16 +131,22 @@ class _ChatScreenState extends State<ChatScreen> {
                                   ),
                                 ],
                               ),
-                              child: Text(
-                                doc['text'] ?? '',
-                                style: TextStyle(
-                                  color: sentByMe
-                                      ? Theme.of(context).colorScheme.onPrimary
-                                      : Theme.of(
-                                          context,
-                                        ).colorScheme.onSecondary,
-                                ),
-                              ),
+                              child: doc.containsKey('text')
+                                  ? Text(
+                                      doc['text'] ?? '',
+                                      style: TextStyle(
+                                        color: sentByMe
+                                            ? Theme.of(
+                                                context,
+                                              ).colorScheme.onPrimary
+                                            : Theme.of(
+                                                context,
+                                              ).colorScheme.onSecondary,
+                                      ),
+                                    )
+                                  : doc.containsKey('photoUrl')
+                                  ? SizedBox()
+                                  : SizedBox(),
                             ),
                           ),
                         );
@@ -146,7 +158,82 @@ class _ChatScreenState extends State<ChatScreen> {
               Row(
                 spacing: 8,
                 children: [
-                  IconButton(icon: Icon(Icons.photo), onPressed: () {}),
+                  IconButton(
+                    icon: Icon(Icons.photo),
+                    onPressed: () async {
+                      final source = await showModalBottomSheet(
+                        context: context,
+                        builder: (context) {
+                          return SafeArea(
+                            child: Wrap(
+                              children: [
+                                ListTile(
+                                  leading: Icon(Icons.photo_library),
+                                  title: Text('Photos'),
+                                  onTap: () => Navigator.of(
+                                    context,
+                                  ).pop(ImageSource.gallery),
+                                ),
+                                ListTile(
+                                  leading: Icon(Icons.camera_alt),
+                                  title: Text('Camera'),
+                                  onTap: () => Navigator.of(
+                                    context,
+                                  ).pop(ImageSource.camera),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+
+                      if (source == null) return;
+
+                      final picker = ImagePicker();
+                      final pickedFile = await picker.pickImage(source: source);
+
+                      if (pickedFile != null && context.mounted) {
+                        final croppedFile = await ImageCropper().cropImage(
+                          sourcePath: pickedFile.path,
+                          uiSettings: [
+                            AndroidUiSettings(
+                              toolbarTitle: 'Position Image',
+                              toolbarColor: Theme.of(
+                                context,
+                              ).colorScheme.primary,
+                              toolbarWidgetColor: Theme.of(
+                                context,
+                              ).colorScheme.onPrimary,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.surface,
+                              hideBottomControls: false,
+                            ),
+                            IOSUiSettings(title: 'Position Image'),
+                          ],
+                        );
+
+                        if (croppedFile == null || !context.mounted) return;
+
+                        showAdaptiveSnackBar(context, 'Uploading photo...');
+
+                        final file = File(croppedFile.path);
+
+                        final photoRef = storageRef.child(
+                          'Chats/$roomId/${DateTime.now().millisecondsSinceEpoch}.jpg',
+                        );
+                        await photoRef.putFile(
+                          file,
+                          SettableMetadata(contentType: 'image/jpeg'),
+                        );
+
+                        final downloadUrl = await photoRef.getDownloadURL();
+
+                        if (roomId == null) return;
+                        await sendPhoto(roomId!, downloadUrl);
+                      }
+                    },
+                  ),
                   Expanded(
                     child: TextField(
                       controller: textController,

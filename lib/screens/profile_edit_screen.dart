@@ -95,13 +95,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       final uid = getUid();
                       final file = File(croppedFile.path);
 
-                      storageRef.child('avatars/$uid.jpg');
-                      await storageRef.putFile(
+                      final avatarRef = storageRef.child('avatars/$uid.jpg');
+                      await avatarRef.putFile(
                         file,
                         SettableMetadata(contentType: 'image/jpeg'),
                       );
 
-                      final downloadUrl = await storageRef.getDownloadURL();
+                      final downloadUrl = await avatarRef.getDownloadURL();
 
                       await db.collection('Users').doc(uid).update({
                         'photoUrl': downloadUrl,
@@ -110,7 +110,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       if (context.mounted) {
                         showAdaptiveSnackBar(
                           context,
-                          'User is already your friend',
+                          'Avatar updated successfully!',
                         );
                       }
                     }

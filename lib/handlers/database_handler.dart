@@ -200,3 +200,17 @@ Future<void> sendMessage(String roomId, String message) async {
     printDebug('Cannot send message: $e');
   }
 }
+
+Future<void> sendPhoto(String roomId, String photoUrl) async {
+  final uid = getUid();
+
+  try {
+    await db.collection('Chat').doc(roomId).collection('Messages').add({
+      'sender': uid,
+      'photoUrl': photoUrl,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+  } catch (e) {
+    printDebug('Cannot send the photo: $e');
+  }
+}
